@@ -25,6 +25,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - Contains:
     - Logo area (small colored icon + text).
     - Action buttons:
+        - **Grid icon** for slide overview navigation
         - **Fullscreen toggle**
         - **Hamburger menu** for secondary actions.
 - Minimal height and padding to maximize viewport space.
@@ -50,10 +51,24 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - First: `Home`
     - Last: `End`
 
-### 3.4 Progress Indicator
-- Displayed near the bottom center of the slide.
-- Shows current slide index and total count.
-- Includes a simple horizontal progress bar reflecting overall position.
+### 3.4 Slide Overview Navigation
+- **Hidden by default** - only appears when grid icon in header is clicked.
+- **Positioning**: Floating bar at the bottom of the page, positioned at the bottom edge of the slide area.
+- **Behavior**: When page has additional content and user scrolls down, the bar moves up with the page to stay at the bottom of the slide.
+- **Layout**: 
+    - Horizontal bar spanning 3/4 of the available width, centered.
+    - Height approximately twice the header height.
+    - Horizontal scrollbar if slides exceed available width.
+- **Slide Thumbnails**:
+    - Each slide represented as a 4:3 aspect ratio box.
+    - Content: Slide title (if available) centered above slide number.
+    - If no title exists, display only the slide number.
+    - Current slide highlighted using CGI brand colors.
+- **Animation**: Slides up from bottom with smooth animation when appearing.
+- **Interaction**: 
+    - Click on any slide thumbnail to jump to that slide.
+    - Toggle visibility by clicking the grid icon in header.
+    - Remains visible until grid icon is clicked again.
 
 ### 3.5 Additional Content Area
 - Appears **below the slide** if the current slide has extra material.
@@ -90,11 +105,20 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Always re-center the stage.
     - **Scroll the page to the top** (in case the previous slide’s content was scrolled down).
 
-### 4.3 Fullscreen Mode
+### 4.3 Slide Overview Navigation
+- Clicking the grid icon in the header toggles the slide overview bar.
+- **Show behavior**: Bar slides up from the bottom with smooth animation.
+- **Hide behavior**: Bar slides down and disappears when grid icon is clicked again.
+- **Slide selection**: Clicking any slide thumbnail immediately navigates to that slide and keeps the overview visible.
+- **Positioning logic**: 
+    - When no additional content: Stays fixed at bottom of slide area.
+    - When additional content exists: Moves with scroll to remain at slide bottom edge.
+
+### 4.4 Fullscreen Mode
 - Clicking the fullscreen button or pressing the `F` key toggles fullscreen.
 - Fullscreen applies to the entire presentation page (not just the slide).
 
-### 4.4 Scaling Logic
+### 4.5 Scaling Logic
 - The slide’s visible size is determined by:
     - The available width and height of the viewport minus header and paddings.
     - The fixed base ratio (4:3).
@@ -104,7 +128,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Update after every slide change.
     - No reflow based on screen proportions only scaling
 
-### 4.5 Auto-Hide Navigation
+### 4.6 Auto-Hide Navigation
 - Navigation buttons disappear after a defined period of inactivity.
 - Any interaction (mouse movement, click, keypress, swipe) shows them again.
 - The delay duration is configurable (see constants below).
