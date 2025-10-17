@@ -125,15 +125,41 @@ These values must be declared as configurable constants at the top of the script
 
 ## 6. Visual Design
 
-- **Theme**: White / light-gray background with blue accent highlights.
+### 6.1 Brand Colors
+Always use the CGI brand color specifications below:
+
+**Red**
+- RGB: R227 G25 B55
+- HEX: #E31937
+- CMYK: C0 M100 Y81 K4
+- PANTONE: 186C
+
+**Purple**
+- RGB: R82 G54 B171
+- HEX: #5236AB
+- CMYK: C80 M81 Y0 K0
+- PANTONE: 2103C
+
+**White**
+- RGB: R255 G255 B255
+- HEX: #ffffff
+- CMYK: C0 M0 Y0 K0
+
+**Black**
+- RGB: R0 G0 B0
+- HEX: #000000
+- CMYK: C0 M0 Y0 K100
+
+### 6.2 Design Guidelines
+- **Theme**: White / light-gray background with CGI brand color accents (red and purple).
 - **Slide background**: White with soft shadow and rounded corners.
 - **Typography**:
     - Responsive sizes (e.g., `clamp()` in CSS).
     - Simple sans-serif font (system default).
     - Legible on both mobile and desktop.
-- **Buttons**: Bootstrap-styled with light borders and subtle hover feedback.
+- **Buttons**: Bootstrap-styled with light borders and subtle hover feedback using brand colors.
 - **Menu**: Compact dropdown for quick actions (Bootstrap dropdown or equivalent).
-- **Progress bar**: Thin, rounded, gradient-filled (blue hues).
+- **Progress bar**: Thin, rounded, gradient-filled using CGI brand colors (red to purple gradient).
 
 ---
 
