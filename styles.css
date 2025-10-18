@@ -273,6 +273,26 @@
     justify-content: center;
 }
 
+/* Stage Overlay for interaction capture and protection */
+.stage-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    cursor: pointer;
+    background: transparent;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    /* Add subtle debug background - remove in production */
+    /* background: rgba(255, 0, 0, 0.05); */
+}
+
 /* Loading Spinner */
 #stage-loading {
     display: flex;

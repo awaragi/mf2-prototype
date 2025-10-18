@@ -22,6 +22,16 @@ let preloadProgress = 0;
 // Overview state
 let isOverviewVisible = false;
 
+// Swipe gesture state
+let swipeState = {
+    isTracking: false,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+    startTime: 0
+};
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Presentation app initialized');
@@ -30,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigation();
     initializeNavigationButtons();
     initializeOverview();
+    initializeSwipeGestures();
     loadSlideFromHash();
     // Start preloading after initial render
     setTimeout(() => startProgressivePreload(), 500);
@@ -616,6 +627,121 @@ function toggleFullscreen() {
     const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
     if (dropdownToggle) {
         dropdownToggle.hide();
+    }
+}
+
+// Swipe gesture initialization
+function initializeSwipeGestures() {
+    const stageOverlay = document.getElementById('stage-overlay');
+    if (!stageOverlay) {
+        console.error('Stage overlay not found for swipe gestures');
+        return;
+    }
+
+    // Add pointer event listeners
+    stageOverlay.addEventListener('pointerdown', handlePointerDown, { passive: false });
+    stageOverlay.addEventListener('pointermove', handlePointerMove, { passive: false });
+    stageOverlay.addEventListener('pointerup', handlePointerEnd, { passive: false });
+    stageOverlay.addEventListener('pointercancel', handlePointerEnd, { passive: false });
+
+    // Prevent context menu and text selection
+    stageOverlay.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // Prevent drag operations
+    stageOverlay.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+    });
+
+    console.log('Swipe gestures initialized');
+}
+
+function handlePointerDown(e) {
+    // Only handle primary pointer (first finger/main pointer)
+    if (!e.isPrimary) {
+        console.log('Ignoring non-primary pointer');
+        return;
+    }
+
+    swipeState.isTracking = true;
+    swipeState.startX = e.clientX;
+    swipeState.startY = e.clientY;
+    swipeState.currentX = e.clientX;
+    swipeState.currentY = e.clientY;
+    swipeState.startTime = Date.now();
+
+    // Capture the pointer
+    e.target.setPointerCapture(e.pointerId);
+}
+
+function handlePointerMove(e) {
+    if (!swipeState.isTracking || !e.isPrimary) return;
+
+    swipeState.currentX = e.clientX;
+    swipeState.currentY = e.clientY;
+
+    // Calculate distances
+    const deltaX = swipeState.currentX - swipeState.startX;
+    const deltaY = swipeState.currentY - swipeState.startY;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    // If this is primarily a vertical gesture, don't prevent default
+    // This allows vertical scrolling on additional content to work properly
+    if (absDeltaY > absDeltaX && absDeltaY > 20) {
+        return;
+    }
+
+    // If this is primarily horizontal, prevent default to avoid any browser gestures
+    if (absDeltaX > absDeltaY && absDeltaX > 10) {
+        e.preventDefault();
+    }
+}
+
+function handlePointerEnd(e) {
+    if (!swipeState.isTracking || !e.isPrimary) return;
+
+    const deltaX = swipeState.currentX - swipeState.startX;
+    const deltaY = swipeState.currentY - swipeState.startY;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+    const deltaTime = Date.now() - swipeState.startTime;
+
+    // Reset tracking state
+    swipeState.isTracking = false;
+
+    // Swipe detection parameters
+    const minSwipeDistance = 50; // Minimum distance for a swipe
+    const maxSwipeTime = 1000; // Maximum time for a swipe (ms)
+    const minSwipeVelocity = 0.1; // Minimum velocity (pixels per ms)
+
+    // Calculate velocity
+    const velocity = absDeltaX / deltaTime;
+
+    // Check if this qualifies as a horizontal swipe
+    if (absDeltaX >= minSwipeDistance &&
+        absDeltaX > absDeltaY * 1.5 && // Horizontal bias
+        deltaTime <= maxSwipeTime &&
+        velocity >= minSwipeVelocity) {
+
+        // Determine swipe direction and navigate
+        if (deltaX > 0) {
+            // Swipe right -> previous slide
+            console.log('Swipe right detected - going to previous slide');
+            navigateSlide(-1);
+        } else {
+            // Swipe left -> next slide  
+            console.log('Swipe left detected - going to next slide');
+            navigateSlide(1);
+        }
+    } else {
+        // nothing to do
+    }
+
+    // Release pointer capture
+    if (e.target.hasPointerCapture(e.pointerId)) {
+        e.target.releasePointerCapture(e.pointerId);
     }
 }
 
