@@ -85,6 +85,7 @@
     justify-content: center;
     padding: 1rem;
     min-height: 0; /* Allow flex shrinking */
+    position: relative;
 }
 
 /* Stage Container - 4:3 Aspect Ratio */
@@ -112,7 +113,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--cgi-white);
+    background-color: rgba(255, 255, 255, 0.9);
     z-index: 10;
 }
 
