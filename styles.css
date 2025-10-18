@@ -580,6 +580,99 @@
     }
 }
 
+/* About Modal Styling */
+.about-modal {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--cgi-red-alpha-15);
+    max-width: 500px;
+    width: 90%;
+    background-color: var(--cgi-white);
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.about-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeInBackdrop 0.3s ease-out;
+}
+
+.about-modal-content {
+    padding: 2rem;
+    color: var(--cgi-black);
+}
+
+.about-modal-title {
+    color: var(--cgi-red);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--cgi-red-alpha-15);
+    padding-bottom: 0.75rem;
+}
+
+.about-modal-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.about-modal-content ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.about-modal-content ul li {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.about-modal-footer {
+    font-size: 0.85rem;
+    color: var(--cgi-gray-medium);
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.about-modal-close-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 2rem;
+    background-color: var(--cgi-red);
+    border-color: var(--cgi-red);
+    color: var(--cgi-white);
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.about-modal-close-btn:hover {
+    background-color: #c2142e; /* Darker red */
+    border-color: #c2142e;
+    transform: translateY(-1px);
+}
+
+.about-modal-close-btn:focus {
+    box-shadow: 0 0 0 0.25rem var(--cgi-red-alpha-25);
+    outline: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 /* Ensure body and html take full height */
 html, body {
     height: 100%;

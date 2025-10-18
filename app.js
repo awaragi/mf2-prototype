@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSwipeGestures();
     initializeAutoHideNavigation();
     loadSlideFromHash();
+    initializeAboutModal();
     // Start preloading after initial render
     setTimeout(() => startProgressivePreload(), 500);
 });
@@ -106,6 +107,14 @@ function initializeHeader() {
     if (gridBtn) {
         gridBtn.addEventListener('click', function() {
             toggleOverview();
+        });
+    }
+
+    // About button handler
+    const aboutBtn = document.getElementById('btn-about');
+    if (aboutBtn) {
+        aboutBtn.addEventListener('click', function() {
+            showAboutModal();
         });
     }
 }
@@ -682,6 +691,60 @@ function toggleFullscreen() {
     const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
     if (dropdownToggle) {
         dropdownToggle.hide();
+    }
+}
+
+// About modal functionality
+function initializeAboutModal() {
+    const modal = document.getElementById('about-modal');
+    const closeBtn = document.getElementById('about-modal-close');
+
+    if (!modal || !closeBtn) {
+        console.error('About modal elements not found');
+        return;
+    }
+
+    // Close button handler
+    closeBtn.addEventListener('click', function() {
+        closeAboutModal();
+    });
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeAboutModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.open) {
+            closeAboutModal();
+        }
+    });
+
+    console.log('About modal initialized');
+}
+
+function showAboutModal() {
+    const modal = document.getElementById('about-modal');
+    if (modal) {
+        modal.showModal();
+        console.log('About modal opened');
+
+        // Close the dropdown menu
+        const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
+        if (dropdownToggle) {
+            dropdownToggle.hide();
+        }
+    }
+}
+
+function closeAboutModal() {
+    const modal = document.getElementById('about-modal');
+    if (modal && modal.open) {
+        modal.close();
+        console.log('About modal closed');
     }
 }
 
