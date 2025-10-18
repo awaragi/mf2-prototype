@@ -19,6 +19,9 @@ let currentSlideIndex = 0;
 const imageCache = new Map();
 let preloadProgress = 0;
 
+// Overview state
+let isOverviewVisible = false;
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Presentation app initialized');
@@ -26,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeStage();
     initializeNavigation();
     initializeNavigationButtons();
+    initializeOverview();
     loadSlideFromHash();
     // Start preloading after initial render
     setTimeout(() => startProgressivePreload(), 500);
@@ -51,12 +55,134 @@ function initializeHeader() {
         });
     }
 
-    // Grid button handler (placeholder)
+    // Grid button handler
     const gridBtn = document.getElementById('btn-grid');
     if (gridBtn) {
         gridBtn.addEventListener('click', function() {
-            console.log('Grid button clicked (functionality will be added later)');
+            toggleOverview();
         });
+    }
+}
+
+// Overview functionality
+function initializeOverview() {
+    generateOverviewThumbnails();
+    updateOverviewPosition();
+
+    // Add scroll listener for positioning when additional content is present
+    window.addEventListener('scroll', debounce(updateOverviewPosition, 100));
+
+    console.log('Overview initialized');
+}
+
+function toggleOverview() {
+    const overviewElement = document.getElementById('overview');
+    if (!overviewElement) return;
+
+    isOverviewVisible = !isOverviewVisible;
+
+    if (isOverviewVisible) {
+        overviewElement.classList.add('visible');
+        updateActiveOverviewThumbnail();
+        updateOverviewPosition();
+        console.log('Overview shown');
+    } else {
+        overviewElement.classList.remove('visible');
+        console.log('Overview hidden');
+    }
+}
+
+function generateOverviewThumbnails() {
+    const thumbnailsContainer = document.getElementById('overview-thumbnails');
+    if (!thumbnailsContainer) return;
+
+    // Clear existing thumbnails
+    thumbnailsContainer.innerHTML = '';
+
+    slides.forEach((slide, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'overview-thumbnail';
+        thumbnail.dataset.slideIndex = index;
+
+        // Add click handler
+        thumbnail.addEventListener('click', function() {
+            navigateToSlide(index);
+            // Keep overview visible after navigation
+        });
+
+        if (slide.template === 'img' && slide.src) {
+            // Image slide - show image with overlay
+            const img = document.createElement('img');
+            img.className = 'thumbnail-image';
+            img.src = slide.src;
+            img.alt = slide.title;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'thumbnail-overlay';
+            overlay.innerHTML = `
+                <div class="thumbnail-number">${index + 1}</div>
+                <div class="thumbnail-title">${slide.title}</div>
+            `;
+
+            thumbnail.appendChild(img);
+            thumbnail.appendChild(overlay);
+        } else {
+            // HTML slide - show number and title
+            thumbnail.innerHTML = `
+                <div class="thumbnail-number">${index + 1}</div>
+                <div class="thumbnail-title">${slide.title}</div>
+            `;
+        }
+
+        thumbnailsContainer.appendChild(thumbnail);
+    });
+
+    console.log(`Generated ${slides.length} overview thumbnails`);
+}
+
+function updateActiveOverviewThumbnail() {
+    const thumbnails = document.querySelectorAll('.overview-thumbnail');
+
+    thumbnails.forEach((thumbnail, index) => {
+        if (index === currentSlideIndex) {
+            thumbnail.classList.add('active');
+        } else {
+            thumbnail.classList.remove('active');
+        }
+    });
+}
+
+function updateOverviewPosition() {
+    const overviewElement = document.getElementById('overview');
+    const additionalSection = document.getElementById('additional');
+
+    if (!overviewElement) return;
+
+    // Check if additional content is visible and if user has scrolled
+    const hasAdditionalContent = additionalSection && additionalSection.classList.contains('visible');
+
+    if (hasAdditionalContent) {
+        const stageWrap = document.getElementById('stage-wrap');
+        const stageRect = stageWrap ? stageWrap.getBoundingClientRect() : null;
+        const scrollY = window.scrollY;
+
+        if (stageRect && scrollY > 0) {
+            // User has scrolled down - position overview to align with bottom of stage area
+            const stageBottom = stageRect.bottom + scrollY;
+            const viewportHeight = window.innerHeight;
+
+            // Calculate if we need to move the overview up
+            const overviewHeight = overviewElement.offsetHeight;
+            const targetPosition = Math.max(0, stageBottom - viewportHeight);
+
+            overviewElement.style.transform = `translateY(-${Math.min(scrollY, targetPosition)}px)`;
+        } else {
+            // Reset to default position
+            overviewElement.style.transform = 'translateY(0)';
+        }
+    } else {
+        // No additional content, keep at bottom
+        overviewElement.style.transform = 'translateY(0)';
     }
 }
 
@@ -124,6 +250,11 @@ function calculateStageScale() {
 
     // Update additional content width to match scaled stage
     updateAdditionalContentWidth();
+
+    // Update overview positioning after scale changes
+    if (isOverviewVisible) {
+        setTimeout(() => updateOverviewPosition(), 100);
+    }
 
     console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${scale.toFixed(3)})`);
 }
@@ -321,6 +452,11 @@ function navigateToSlide(index) {
 
     // Render slide content
     renderSlide(slide);
+
+    // Update overview thumbnail highlighting
+    if (isOverviewVisible) {
+        updateActiveOverviewThumbnail();
+    }
 }
 
 function updateHeaderTitle(title) {

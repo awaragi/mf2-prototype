@@ -64,6 +64,134 @@
     margin-bottom: 1rem;
 }
 
+/* Slide Overview Bar */
+.overview-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    visibility: hidden;
+}
+
+.overview-bar.visible {
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.overview-content {
+    width: 75%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    height: calc(2 * 60px); /* 2x header height */
+    display: flex;
+    align-items: center;
+}
+
+.overview-thumbnails {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    padding: 0.25rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.overview-thumbnails::-webkit-scrollbar {
+    height: 4px;
+}
+
+.overview-thumbnails::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overview-thumbnails::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 2px;
+}
+
+.overview-thumbnails::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+.overview-thumbnail {
+    flex-shrink: 0;
+    width: 80px;
+    height: 60px;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.overview-thumbnail:hover {
+    border-color: #5236AB;
+    transform: scale(1.05);
+}
+
+.overview-thumbnail.active {
+    border-color: #E31937;
+    background: #E31937;
+    color: white;
+    transform: scale(1.1);
+}
+
+.overview-thumbnail.active:hover {
+    border-color: #E31937;
+}
+
+.thumbnail-number {
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.thumbnail-title {
+    font-size: 0.6rem;
+    text-align: center;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    padding: 0 0.25rem;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.thumbnail-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: white;
+    padding: 0.25rem;
+    font-size: 0.6rem;
+    text-align: center;
+}
+
 #current-title {
     font-weight: 500;
     color: var(--cgi-black);
