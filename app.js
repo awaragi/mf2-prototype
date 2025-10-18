@@ -13,12 +13,15 @@ const BASE_H = 768;
 let currentScale = 1;
 let stageElement;
 let stageWrapElement;
+let currentSlideIndex = 0;
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Presentation app initialized');
     initializeHeader();
     initializeStage();
+    initializeNavigation();
+    loadSlideFromHash();
 });
 
 // Header functionality
@@ -94,8 +97,7 @@ function calculateStageScale() {
     const scaleByHeight = availableHeight / BASE_H;
 
     // Use the smaller scale to ensure it fits
-    const scale = Math.min(scaleByWidth, scaleByHeight, 1); // Don't scale up beyond 1:1
-
+    const scale = Math.min(scaleByWidth, scaleByHeight); // Allow scaling beyond 1:1
     // Apply scaling
     currentScale = scale;
 
@@ -107,7 +109,203 @@ function calculateStageScale() {
     stageElement.style.height = `${stageHeight}px`;
     stageElement.style.maxWidth = `${stageWidth}px`;
 
+    // Reapply content scaling if content exists
+    const contentContainer = stageElement.querySelector('.slide-content');
+    if (contentContainer) {
+        applyContentScaling(contentContainer);
+    }
+
     console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${scale.toFixed(3)})`);
+}
+
+// Navigation and slide management
+function initializeNavigation() {
+    // Listen for hash changes
+    window.addEventListener('hashchange', loadSlideFromHash);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        switch(e.key) {
+            case 'ArrowLeft':
+            case 'ArrowUp':
+                e.preventDefault();
+                navigateSlide(-1);
+                break;
+            case 'ArrowRight':
+            case 'ArrowDown':
+            case ' ':
+                e.preventDefault();
+                navigateSlide(1);
+                break;
+            case 'Home':
+                e.preventDefault();
+                navigateToSlide(0);
+                break;
+            case 'End':
+                e.preventDefault();
+                navigateToSlide(slides.length - 1);
+                break;
+        }
+    });
+}
+
+function loadSlideFromHash() {
+    const hash = window.location.hash.slice(1);
+    let slideIndex = 0;
+
+    if (hash) {
+        const foundIndex = slides.findIndex(slide => slide.id === hash);
+        if (foundIndex !== -1) {
+            slideIndex = foundIndex;
+        }
+    }
+
+    navigateToSlide(slideIndex);
+}
+
+function navigateSlide(direction) {
+    const newIndex = currentSlideIndex + direction;
+    if (newIndex >= 0 && newIndex < slides.length) {
+        navigateToSlide(newIndex);
+    }
+}
+
+function navigateToSlide(index) {
+    if (index < 0 || index >= slides.length) return;
+
+    currentSlideIndex = index;
+    const slide = slides[index];
+
+    // Update URL hash
+    window.history.replaceState(null, null, `#${slide.id}`);
+
+    // Update header title
+    updateHeaderTitle(slide.title);
+
+    // Render slide content
+    renderSlide(slide);
+}
+
+function updateHeaderTitle(title) {
+    const titleElement = document.getElementById('current-title');
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+}
+
+function renderSlide(slide) {
+    if (!stageElement) return;
+
+    // Show loading
+    showLoading(true);
+
+    // Clear existing content
+    stageElement.innerHTML = '';
+
+    // Create content container
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'slide-content';
+    contentContainer.style.width = `${BASE_W}px`;
+    contentContainer.style.height = `${BASE_H}px`;
+    contentContainer.style.position = 'absolute';
+    contentContainer.style.top = '0';
+    contentContainer.style.left = '0';
+    contentContainer.style.overflow = 'hidden';
+
+    // Render based on template type
+    if (slide.template === 'html') {
+        renderHtmlSlide(contentContainer, slide);
+    } else if (slide.template === 'img') {
+        renderImageSlide(contentContainer, slide);
+    }
+
+    stageElement.appendChild(contentContainer);
+
+    // Apply scaling transform
+    applyContentScaling(contentContainer);
+
+    // Hide loading after a short delay
+    setTimeout(() => showLoading(false), 300);
+}
+
+function renderHtmlSlide(container, slide) {
+    const content = document.createElement('div');
+    content.className = 'html-slide';
+    content.style.padding = '40px';
+    content.style.height = '100%';
+    content.style.boxSizing = 'border-box';
+    content.style.display = 'flex';
+    content.style.flexDirection = 'column';
+    content.style.justifyContent = 'center';
+    content.style.overflow = 'auto';
+
+    content.innerHTML = slide.html;
+
+    // Add additional content if present
+    if (slide.additional) {
+        const additionalDiv = document.createElement('div');
+        additionalDiv.className = 'additional-content';
+        additionalDiv.style.marginTop = '2rem';
+        additionalDiv.style.fontSize = '0.9em';
+        additionalDiv.innerHTML = slide.additional;
+        content.appendChild(additionalDiv);
+    }
+
+    container.appendChild(content);
+}
+
+function renderImageSlide(container, slide) {
+    const img = document.createElement('img');
+    img.src = slide.src;
+    img.alt = slide.title;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    img.style.objectFit = 'contain';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
+
+    const content = document.createElement('div');
+    content.className = 'image-slide';
+    content.style.height = '100%';
+    content.style.display = 'flex';
+    content.style.alignItems = 'center';
+    content.style.justifyContent = 'center';
+    content.style.padding = '20px';
+    content.style.boxSizing = 'border-box';
+
+    content.appendChild(img);
+
+    // Add additional content if present
+    if (slide.additional) {
+        const additionalDiv = document.createElement('div');
+        additionalDiv.className = 'additional-content';
+        additionalDiv.style.position = 'absolute';
+        additionalDiv.style.bottom = '20px';
+        additionalDiv.style.left = '20px';
+        additionalDiv.style.right = '20px';
+        additionalDiv.style.background = 'rgba(255, 255, 255, 0.9)';
+        additionalDiv.style.padding = '15px';
+        additionalDiv.style.borderRadius = '8px';
+        additionalDiv.innerHTML = slide.additional;
+        content.appendChild(additionalDiv);
+        content.style.position = 'relative';
+    }
+
+    container.appendChild(content);
+}
+
+function applyContentScaling(contentContainer) {
+    const scale = currentScale;
+    contentContainer.style.transform = `scale(${scale})`;
+    contentContainer.style.transformOrigin = 'top left';
+}
+
+function showLoading(show) {
+    const loadingElement = document.getElementById('stage-loading');
+    if (loadingElement) {
+        loadingElement.style.display = show ? 'flex' : 'none';
+        loadingElement.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
 }
 
 // Debounce utility function
