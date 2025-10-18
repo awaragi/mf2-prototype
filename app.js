@@ -22,6 +22,11 @@ let preloadProgress = 0;
 // Overview state
 let isOverviewVisible = false;
 
+// Auto-hide navigation state
+let autoHideTimer = null;
+let areNavigationButtonsVisible = true;
+let isMenuOpen = false;
+
 // Swipe gesture state
 let swipeState = {
     isTracking: false,
@@ -41,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeNavigationButtons();
     initializeOverview();
     initializeSwipeGestures();
+    initializeAutoHideNavigation();
     loadSlideFromHash();
     // Start preloading after initial render
     setTimeout(() => startProgressivePreload(), 500);
@@ -66,7 +72,7 @@ function initializeHeader() {
         });
     }
 
-    // Close dropdown on outside click
+    // Track menu state and close dropdown on outside click
     document.addEventListener('click', function(e) {
         const dropdown = document.querySelector('#btn-menu').closest('.dropdown');
         const dropdownMenu = dropdown.querySelector('.dropdown-menu');
@@ -79,6 +85,21 @@ function initializeHeader() {
             }
         }
     });
+
+    // Track menu open/close events
+    const menuButton = document.getElementById('btn-menu');
+    if (menuButton) {
+        menuButton.addEventListener('shown.bs.dropdown', function() {
+            isMenuOpen = true;
+            console.log('Menu opened - pausing auto-hide');
+        });
+
+        menuButton.addEventListener('hidden.bs.dropdown', function() {
+            isMenuOpen = false;
+            console.log('Menu closed - resuming auto-hide');
+            resetAutoHideTimer();
+        });
+    }
 
     // Grid button handler
     const gridBtn = document.getElementById('btn-grid');
@@ -110,10 +131,11 @@ function toggleOverview() {
         overviewElement.classList.add('visible');
         updateActiveOverviewThumbnail();
         updateOverviewPosition();
-        console.log('Overview shown');
+        console.log('Overview shown - pausing auto-hide');
     } else {
         overviewElement.classList.remove('visible');
-        console.log('Overview hidden');
+        console.log('Overview hidden - resuming auto-hide');
+        resetAutoHideTimer();
     }
 }
 
@@ -492,6 +514,9 @@ function navigateToSlide(index) {
     if (isOverviewVisible) {
         updateActiveOverviewThumbnail();
     }
+
+    // Update navigation button visibility
+    updateNavigationButtonVisibility();
 }
 
 function updateHeaderTitle(title) {
@@ -536,7 +561,11 @@ function renderSlide(slide) {
     renderAdditionalContent(slide);
 
     // Hide loading after a short delay
-    setTimeout(() => showLoading(false), 300);
+    setTimeout(() => {
+        showLoading(false);
+        // Ensure navigation buttons are properly updated after render
+        updateNavigationButtonVisibility();
+    }, 300);
 }
 
 function renderHtmlSlide(container, slide) {
@@ -742,6 +771,104 @@ function handlePointerEnd(e) {
     // Release pointer capture
     if (e.target.hasPointerCapture(e.pointerId)) {
         e.target.releasePointerCapture(e.pointerId);
+    }
+}
+
+// Auto-hide navigation functionality
+function initializeAutoHideNavigation() {
+    // Initialize with buttons visible
+    showNavigationButtons();
+
+    // Add activity listeners
+    const activityEvents = ['mousemove', 'mousedown', 'click', 'keydown', 'pointerdown', 'touchstart'];
+
+    activityEvents.forEach(eventType => {
+        document.addEventListener(eventType, handleUserActivity, { passive: true });
+    });
+
+    // Start the initial timer
+    resetAutoHideTimer();
+
+    console.log('Auto-hide navigation initialized');
+}
+
+function handleUserActivity() {
+    // Show buttons if they were hidden
+    if (!areNavigationButtonsVisible) {
+        showNavigationButtons();
+    }
+
+    // Reset the auto-hide timer
+    resetAutoHideTimer();
+}
+
+function resetAutoHideTimer() {
+    // Clear existing timer
+    if (autoHideTimer) {
+        clearTimeout(autoHideTimer);
+        autoHideTimer = null;
+    }
+
+    // Don't start timer if menu or overview are open
+    if (isMenuOpen || isOverviewVisible) {
+        return;
+    }
+
+    // Start new timer
+    autoHideTimer = setTimeout(() => {
+        hideNavigationButtons();
+    }, INACTIVITY_HIDE_MS);
+}
+
+function showNavigationButtons() {
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+
+    if (prevBtn && nextBtn) {
+        prevBtn.classList.remove('auto-hidden');
+        nextBtn.classList.remove('auto-hidden');
+        areNavigationButtonsVisible = true;
+
+        // Update visibility based on current slide position
+        updateNavigationButtonVisibility();
+    }
+}
+
+function updateNavigationButtonVisibility() {
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+
+    if (!prevBtn || !nextBtn) return;
+
+    // Hide previous button on first slide
+    if (currentSlideIndex === 0) {
+        prevBtn.classList.add('nav-hidden');
+    } else {
+        prevBtn.classList.remove('nav-hidden');
+    }
+
+    // Hide next button on last slide
+    if (currentSlideIndex === slides.length - 1) {
+        nextBtn.classList.add('nav-hidden');
+    } else {
+        nextBtn.classList.remove('nav-hidden');
+    }
+}
+
+function hideNavigationButtons() {
+    // Don't hide if menu or overview are open
+    if (isMenuOpen || isOverviewVisible) {
+        return;
+    }
+
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+
+    if (prevBtn && nextBtn) {
+        prevBtn.classList.add('auto-hidden');
+        nextBtn.classList.add('auto-hidden');
+        areNavigationButtonsVisible = false;
+        console.log('Navigation buttons auto-hidden after inactivity');
     }
 }
 

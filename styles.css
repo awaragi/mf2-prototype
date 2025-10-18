@@ -334,8 +334,8 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  opacity: 0.25;
-  transition: all 0.3s ease;
+  opacity: 0.75;
+  transition: all 0.5s ease;
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -354,6 +354,17 @@
   outline: none;
   border-color: var(--cgi-purple);
   color: var(--cgi-purple);
+}
+
+.nav-btn.auto-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nav-btn.nav-hidden {
+  opacity: 0.1;
+  pointer-events: none;
+  cursor: default;
 }
 
 .nav-btn-prev {
