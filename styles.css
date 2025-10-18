@@ -1,2 +1,71 @@
 /* Custom styles for Presentation App */
-/* Styles will be added in subsequent stages */
+
+/* CGI Brand Colors */
+:root {
+    --cgi-red: #E31937;
+    --cgi-purple: #5236AB;
+    --cgi-white: #ffffff;
+    --cgi-black: #000000;
+}
+
+/* Header Styling */
+#app-header {
+    min-height: 60px;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6 !important;
+    background-color: var(--cgi-white) !important;
+}
+
+#cgi-logo {
+    height: 40px;
+    width: auto;
+    cursor: pointer;
+}
+
+#current-title {
+    font-weight: 500;
+    color: var(--cgi-black);
+}
+
+#logo-area {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+#logo-area:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Action Buttons */
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--cgi-red);
+    border-color: var(--cgi-red);
+    color: white;
+}
+
+.btn-outline-secondary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(227, 25, 55, 0.25);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item:hover {
+    background-color: var(--cgi-red);
+    color: white;
+}
+
+.dropdown-item:focus {
+    background-color: var(--cgi-red);
+    color: white;
+}

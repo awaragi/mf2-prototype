@@ -14,8 +14,34 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header id="app-header">
-        <!-- Header content will be added in Stage 1 -->
+    <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
+        <div class="container-fluid">
+            <!-- Logo and title area -->
+            <div class="navbar-brand d-flex align-items-center" id="logo-area">
+                <img src="assets/cgi-logo.png" alt="CGI Logo" id="cgi-logo" class="me-2">
+                <span id="current-title"></span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="d-flex align-items-center">
+                <!-- Grid button -->
+                <button class="btn btn-outline-secondary me-2" id="btn-grid" type="button" aria-label="Show slide overview">
+                    <i class="bi bi-grid"></i>
+                </button>
+
+                <!-- Hamburger menu dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="btn-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btn-menu">
+                        <li><button class="dropdown-item" id="menu-fullscreen" type="button">Fullscreen</button></li>
+                        <li><button class="dropdown-item" type="button">Bookmarks</button></li>
+                        <li><button class="dropdown-item" type="button">About</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </header>
 
     <main id="app-main">
