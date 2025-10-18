@@ -23,7 +23,11 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 ### 3.1 Header (Sticky Navbar)
 - Fixed at the top of the page.
 - Contains:
-    - Logo area (small colored icon + text).
+    - **Logo area**:
+        - CGI logo (downloaded from https://www.cgi.com/en/cgi-downloads)
+        - Current slide title displayed next to the logo
+        - Logo resizes to fit header height with appropriate padding
+        - Clickable area navigates to root path (removes URL hash)
     - Action buttons:
         - **Grid icon** for slide overview navigation
         - **Hamburger menu** with dropdown containing:
@@ -42,7 +46,11 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - Minimal padding around it to maximize content area.
 
 ### 3.3 Navigation Controls
-- Circular **Previous** and **Next** buttons placed vertically centered at the left and right sides of the slide.
+- Circular **Previous** and **Next** buttons positioned at the left and right viewport edges.
+- **Positioning**: 
+    - Fixed/floating at viewport edges, vertically centered
+    - Sticky behavior: remain at same position when scrolling through additional content
+    - High z-index to float above slide content
 - 25% opacity by default; slightly enlarge and brighten on hover.
 - **Auto-hide** after a period of user inactivity (see constants below).
 - Reappear on any user interaction (mouse, keyboard, or touch).
@@ -108,6 +116,11 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - `html`: optional HTML markup for textual slides
     - `src`: optional image URL for image slides
     - `additional`: optional HTML content to show below the slide
+- **HTML content guidelines**:
+    - **Supported elements**: headings (`h1`-`h6`), paragraphs (`p`), bold (`strong`, `b`), italic (`em`, `i`), bullet lists (`ul`, `li`), numbered lists (`ol`, `li`), images (`img`)
+    - **Content rendering**: HTML content rendered at correct 4:3 aspect ratio first
+    - **Content scaling**: Scaled proportionally to fit the stage container along with slide
+    - **Typography**: Text elements should scale with container for consistent presentation
 - **Sample data structure** (5-6 slides with varied content):
     - Slide 1: Simple HTML content only
     - Slide 2: HTML content with additional content below
@@ -125,7 +138,8 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Swipe left → Next slide.
     - Swipe right → Previous slide.
     - Should ignore mostly vertical drags (for scrolling additional content).
-    - Must work via touch or pointer events across modern devices.
+    - **Custom implementation** using native JavaScript touch/pointer events
+    - Support both touch devices and pointer-capable devices
 - Navigating between slides should
     - **Scroll the page to the top** (in case the previous slide’s content was scrolled down).
 
@@ -135,8 +149,8 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - **No page reloads**: All navigation must stay within the page using hash-based routing
 - **Invalid URL handling**: If URL contains invalid slide ID, default to first slide (index 0) and update hash accordingly
 - **Page title updates**: Update document title to reflect current slide:
-    - Format: `"Slide Title - Presentation"` (if slide has title)
-    - Format: `"Slide X - Presentation"` (if no title, where X is slide number)
+    - Format: `"Presentation - Title"` (if slide has title)
+    - Format: `"Presentation - Slide X"` (if no title, where X is slide number)
     - Default: `"Presentation"` (during loading)
 
 ### 4.4 Slide Overview Navigation
@@ -216,8 +230,6 @@ Always use the CGI brand color specifications below:
 - HEX: #000000
 - CMYK: C0 M0 Y0 K100
 
-gradients are acceptable when applicable
-
 ### 6.2 Design Guidelines
 - **Theme**: White / light-gray background with CGI brand color accents (red and purple).
 - **Slide background**: White with soft shadow and rounded corners.
@@ -255,8 +267,9 @@ The design should make it easy to add future features such as:
 
 ## 10. Deliverables
 - **multiple files:** with root file being `index.html`
-    - seperate HTML, CSS, and JS (no build pipeline)
+    - separate HTML, CSS, and JS (no build pipeline)
     - `slides.js` with sample slide data as default export
+    - CGI logo file (downloaded from https://www.cgi.com/en/cgi-downloads)
     - Loads Bootstrap 5 and Bootstrap Icons via CDN
     - Fully responsive 
 ---
@@ -287,7 +300,7 @@ The design should make it easy to add future features such as:
 - Clean, modular code (easy to extend).
 - Cross-browser responsive layout.
 - Fluid scaling without visible lag.
-- No external dependencies beyond Bootstrap and Bootstrap Icons and swipe libraries
+- No external dependencies beyond Bootstrap and Bootstrap Icons
 
 ---
 
