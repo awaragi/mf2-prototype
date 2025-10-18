@@ -12,6 +12,7 @@ export default [
         <p style="font-size: 1.2rem;">
           Let's begin our journey together
         </p>
+        <p><img src="attachments/strapi-logo.png" alt="strapi-logo" style="width: 20rem; height: auto;" /></p>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus blanditiis dicta inventore, labore nihil nobis optio saepe soluta vel vitae. Asperiores dolorem dolorum harum itaque non, repellendus unde. Accusantium consequatur deleniti distinctio, ducimus earum esse est eveniet expedita illo illum ipsam, ipsum iure iusto magni nisi nulla pariatur rem repellendus rerum sed sint voluptas voluptatum! Adipisci assumenda dolore doloribus enim et id, libero magnam molestias nostrum obcaecati quibusdam saepe, sed tenetur vitae voluptatem. Aliquid at corporis debitis dignissimos dolor earum esse fugit iste, nostrum perspiciatis quasi quia quis quisquam repudiandae sequi suscipit tempora veniam? Consequatur ex maiores mollitia nulla tenetur.</p>
       </div>
     `
@@ -76,24 +77,24 @@ export default [
     id: "image-1",
     title: "System Architecture Diagram",
     template: "img",
-    src: "https://via.placeholder.com/1024x768/E31937/FFFFFF?text=System+Architecture+Diagram"
+    src: "attachments/strapi-integration.png",
   },
 
   {
     id: "gallery",
-    title: "Team Collaboration",
+    title: "Benefits of Strapi Integration",
     template: "img",
-    src: "https://via.placeholder.com/1024x768/5236AB/FFFFFF?text=Team+Working+Together",
+    src: "attachments/strapi-benefits.png",
     additional: `
       <div style="text-align: center;">
         <p style="font-size: 1.2rem;">
-          Our diverse team of experts collaborating on innovative solutions that drive meaningful results for our clients.
+          Strapi's headless CMS integration provides powerful content management capabilities while maintaining flexibility and scalability.
         </p>
         <p style="font-size: 1rem;">
-          Photo taken at our innovation lab during the quarterly planning session.
+          Diagram illustrates key benefits and integration points of the Strapi ecosystem.
         </p>
       </div>
-    `
+   `
   },
 
   {
