@@ -227,15 +227,39 @@ function initializeNavigationButtons() {
 function loadSlideFromHash() {
     const hash = window.location.hash.slice(1);
     let slideIndex = 0;
+    let shouldFixHash = false;
 
     if (hash) {
         const foundIndex = slides.findIndex(slide => slide.id === hash);
         if (foundIndex !== -1) {
             slideIndex = foundIndex;
+        } else {
+            // Invalid hash - will default to first slide and fix hash
+            shouldFixHash = true;
+            console.warn(`Invalid slide hash: ${hash}, defaulting to first slide`);
         }
+    } else if (currentSlideIndex !== 0) {
+        // No hash but we're not on first slide, go to first slide
+        slideIndex = 0;
+        shouldFixHash = true;
     }
 
-    navigateToSlide(slideIndex);
+    // If we need to fix the hash or if it's empty, set it correctly
+    if (shouldFixHash || !hash) {
+        currentSlideIndex = slideIndex;
+        const slide = slides[slideIndex];
+
+        // Update hash without triggering hashchange event
+        window.history.replaceState(null, null, `#${slide.id}`);
+
+        // Update UI directly
+        updateHeaderTitle(slide.title);
+        document.title = `Presentation - ${slide.title}`;
+        renderSlide(slide);
+    } else {
+        // Valid hash, navigate normally
+        navigateToSlide(slideIndex);
+    }
 }
 
 function navigateSlide(direction) {
@@ -254,8 +278,8 @@ function navigateToSlide(index) {
     // Scroll to top of page
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Update URL hash
-    window.history.replaceState(null, null, `#${slide.id}`);
+    // Update URL hash - use location.hash for proper browser history
+    location.hash = slide.id;
 
     // Update header title
     updateHeaderTitle(slide.title);
