@@ -67,6 +67,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - **Animation**: Slides up from bottom with smooth animation when appearing.
 - **Interaction**: 
     - Click on any slide thumbnail to jump to that slide.
+    - No animation required when jumping directly to slide.
     - Toggle visibility by clicking the grid icon in header.
     - Remains visible until grid icon is clicked again.
 
@@ -84,11 +85,12 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 ### 4.1 Slide Rendering
 - Each slide is defined in a JS array loaded from an external script
 - all slides should be prendered on loading for max performance.
-- first slide displayed immediately while pre-rendering the other slides in hidden blocks. 
+- display slide placeholder animation while pre-rendering the slides in hidden blocks. 
+- Navigating to a slide becomes a matter of moving slide pre-rendered blocks into and out of view
 - A slide object includes:
     - `id`: unique string.
     - `title`: optional string 
-    - `tenplate`: `"html"` or `"image"`.
+    - `template`: `"html"` | `"img"`.
     - `html`: optional HTML markup for textual slides.
     - `src`: optional image URL for image slides.
     - `additional`: optional HTML content to show below the slide.
@@ -98,8 +100,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Clicks on previous/next buttons.
     - Keyboard input (as listed above).
     - Swipe gestures (see below).
-    - animation effect when sliding alides (slide in from left or from right)
-    - always have precache previous and next slide if possible
+- Animation effect when changing slides (slide in from left or from right)
 - **Swipe gestures**:
     - Swipe left → Next slide.
     - Swipe right → Previous slide.
@@ -113,8 +114,8 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - Clicking the grid icon in the header toggles the slide overview bar.
 - **Show behavior**: Bar slides up from the bottom with smooth animation.
 - **Hide behavior**: Bar slides down and disappears when grid icon is clicked again.
-- **Slide selection**: Clicking any slide thumbnail immediately navigates to that slide and keeps the overview visible. No animation is required when navigating direvtly to a slide.
-- precaching ahould done poste navigation. 
+- **Slide selection**: Clicking any slide thumbnail navigates to that slide and keeps the overview visible.
+  - No animation required when navigating to a slide via the slide overview.
 - **Positioning logic**: 
     - When no additional content: Stays fixed at bottom of slide area.
     - When additional content exists: Moves with scroll to remain at slide bottom edge.
