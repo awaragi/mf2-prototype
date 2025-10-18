@@ -6,14 +6,23 @@
     --cgi-purple: #5236AB;
     --cgi-white: #ffffff;
     --cgi-black: #000000;
+    --cgi-gray-light: #f8f9fa;
+    --cgi-gray-medium: #6c757d;
+    --cgi-gray-dark: #343a40;
 }
 
-/* Header Styling */
+/* Typography - System sans-serif with responsive scaling */
+* {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Header Styling with Brand Accent */
 #app-header {
     min-height: 60px;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #dee2e6 !important;
+    border-bottom: 2px solid var(--cgi-red) !important;
     background-color: var(--cgi-white) !important;
+    box-shadow: 0 2px 4px rgba(227, 25, 55, 0.1);
 }
 
 #cgi-logo {
@@ -36,19 +45,26 @@
 
 #additional-content {
     margin: 0 auto;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    font-size: 1rem;
+    background: var(--cgi-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(227, 25, 55, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    font-size: clamp(0.95rem, 1.6vw, 1.1rem);
     line-height: 1.6;
-    color: #333;
+    color: var(--cgi-black);
+    border: 1px solid rgba(227, 25, 55, 0.1);
 }
 
-#additional-content h1, #additional-content h2, #additional-content h3,
+#additional-content h1, #additional-content h2, #additional-content h3 {
+    color: var(--cgi-red);
+    margin-bottom: clamp(0.75rem, 2vw, 1.25rem);
+    font-weight: 600;
+}
+
 #additional-content h4, #additional-content h5, #additional-content h6 {
-    color: #E31937;
-    margin-bottom: 1rem;
+    color: var(--cgi-purple);
+    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+    font-weight: 500;
 }
 
 #additional-content ul, #additional-content ol {
@@ -64,19 +80,20 @@
     margin-bottom: 1rem;
 }
 
-/* Slide Overview Bar */
+/* Slide Overview Bar with Enhanced Brand Styling */
 .overview-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 1020;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid #dee2e6;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 2px solid var(--cgi-red);
+    box-shadow: 0 -4px 16px rgba(227, 25, 55, 0.15), 0 -2px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     visibility: hidden;
 }
 
@@ -127,33 +144,38 @@
     flex-shrink: 0;
     width: 80px;
     height: 60px;
-    background: #f8f9fa;
-    border: 2px solid #dee2e6;
-    border-radius: 6px;
+    background: var(--cgi-gray-light);
+    border: 2px solid rgba(227, 25, 55, 0.15);
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .overview-thumbnail:hover {
-    border-color: #5236AB;
+    border-color: var(--cgi-purple);
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(82, 54, 171, 0.2);
 }
 
 .overview-thumbnail.active {
-    border-color: #E31937;
-    background: #E31937;
-    color: white;
+    border-color: var(--cgi-red);
+    background: var(--cgi-red);
+    color: var(--cgi-white);
     transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(227, 25, 55, 0.3);
 }
 
 .overview-thumbnail.active:hover {
-    border-color: #E31937;
+    border-color: var(--cgi-red);
+    background: var(--cgi-red);
+    box-shadow: 0 8px 20px rgba(227, 25, 55, 0.4);
 }
 
 .thumbnail-number {
@@ -193,51 +215,88 @@
 }
 
 #current-title {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--cgi-black);
+    font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
 #logo-area {
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 #logo-area:hover {
     text-decoration: none;
     color: inherit;
+    opacity: 0.8;
 }
 
-/* Action Buttons */
+#logo-area:focus {
+    outline: 2px solid var(--cgi-red);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Action Buttons with Brand Styling */
 .btn-outline-secondary {
-    border-color: #6c757d;
-    color: #6c757d;
+    border-color: var(--cgi-gray-medium);
+    color: var(--cgi-gray-medium);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
 }
 
 .btn-outline-secondary:hover {
     background-color: var(--cgi-red);
     border-color: var(--cgi-red);
-    color: white;
+    color: var(--cgi-white);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(227, 25, 55, 0.3);
 }
 
 .btn-outline-secondary:focus {
-    box-shadow: 0 0 0 0.25rem rgba(227, 25, 55, 0.25);
+    box-shadow: 0 0 0 3px rgba(227, 25, 55, 0.25);
+    border-color: var(--cgi-red);
+    color: var(--cgi-red);
 }
 
-/* Dropdown Menu */
+.btn-outline-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(227, 25, 55, 0.2);
+}
+
+/* Dropdown Menu with Brand Styling */
 .dropdown-menu {
-    border: 1px solid #dee2e6;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(227, 25, 55, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
 }
 
 .dropdown-item:hover {
     background-color: var(--cgi-red);
-    color: white;
+    color: var(--cgi-white);
 }
 
 .dropdown-item:focus {
     background-color: var(--cgi-red);
-    color: white;
+    color: var(--cgi-white);
+    outline: none;
+}
+
+.dropdown-item:active {
+    background-color: var(--cgi-purple);
+    color: var(--cgi-white);
 }
 
 /* Main Content Area */
@@ -258,19 +317,20 @@
     position: relative;
 }
 
-/* Stage Container - 4:3 Aspect Ratio */
+/* Stage Container - 4:3 Aspect Ratio with Enhanced Styling */
 #stage {
     aspect-ratio: 4 / 3;
     width: 100%;
     max-width: 100%;
     background-color: var(--cgi-white);
-    border-radius: 8px;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(227, 25, 55, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(227, 25, 55, 0.1);
 }
 
 /* Stage Overlay for interaction capture and protection */
@@ -309,16 +369,66 @@
 
 #stage-loading .spinner-border {
     color: var(--cgi-red) !important;
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
 }
 
-/* Slide Content Styles */
+#stage-loading::after {
+    content: 'Loading...';
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--cgi-gray-medium);
+    font-weight: 500;
+}
+
+/* Slide Content Styles with Responsive Typography */
 .slide-content {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     color: var(--cgi-black);
     line-height: 1.6;
 }
 
-/* Floating Navigation Buttons */
+/* Responsive Typography using clamp() */
+.html-slide h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 700;
+    color: var(--cgi-red);
+    margin-bottom: clamp(0.75rem, 2vw, 1.5rem);
+    line-height: 1.2;
+}
+
+.html-slide h2 {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 600;
+    color: var(--cgi-red);
+    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+    line-height: 1.3;
+}
+
+.html-slide h3 {
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+    font-weight: 500;
+    color: var(--cgi-purple);
+    margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+    line-height: 1.4;
+}
+
+.html-slide p {
+    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+    line-height: 1.6;
+    color: var(--cgi-black);
+}
+
+.html-slide li {
+    font-size: clamp(0.95rem, 1.7vw, 1.2rem);
+    margin-bottom: clamp(0.25rem, 0.8vw, 0.5rem);
+    line-height: 1.5;
+    color: var(--cgi-black);
+}
+
+/* Floating Navigation Buttons with Brand Styling */
 .nav-btn {
   position: fixed;
   top: 50%;
@@ -326,34 +436,41 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
+  border: 2px solid rgba(227, 25, 55, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--cgi-gray-dark);
   font-size: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  opacity: 0.75;
-  transition: all 0.5s ease;
+  opacity: 0.8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(227, 25, 55, 0.15);
 }
 
 .nav-btn:hover {
-  opacity: 0.9;
-  background: rgba(255, 255, 255, 1);
+  opacity: 1;
+  background: var(--cgi-white);
   border-color: var(--cgi-red);
   color: var(--cgi-red);
   transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 24px rgba(227, 25, 55, 0.25);
 }
 
 .nav-btn:focus {
   outline: none;
   border-color: var(--cgi-purple);
   color: var(--cgi-purple);
+  box-shadow: 0 0 0 3px rgba(82, 54, 171, 0.2);
+}
+
+.nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+  transition-duration: 0.1s;
 }
 
 .nav-btn.auto-hidden {
@@ -392,34 +509,9 @@
   }
 }
 
-.html-slide h1, .html-slide h2, .html-slide h3 {
-    color: var(--cgi-red);
-    margin-bottom: 1rem;
-}
-
-.html-slide h1 {
-    font-weight: 700;
-}
-
-.html-slide h2 {
-    font-weight: 600;
-}
-
-.html-slide h3 {
-    font-weight: 500;
-}
-
-.html-slide p {
-    margin-bottom: 1rem;
-}
-
 .html-slide ol, .html-slide ul {
-    padding-left: 2rem;
-    margin-bottom: 1rem;
-}
-
-.html-slide li {
-    margin-bottom: 0.5rem;
+    padding-left: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
 }
 
 .image-slide {
