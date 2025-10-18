@@ -26,8 +26,10 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Logo area (small colored icon + text).
     - Action buttons:
         - **Grid icon** for slide overview navigation
-        - **Fullscreen toggle**
-        - **Hamburger menu** for secondary actions.
+        - **Hamburger menu** with dropdown containing:
+            - **Fullscreen toggle**
+            - **Bookmarks** (placeholder for future functionality)
+            - **About** (placeholder for future functionality)
 - Minimal height and padding to maximize viewport space.
 - White background with a subtle bottom border.
 
@@ -67,7 +69,6 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 - **Animation**: Slides up from bottom with smooth animation when appearing.
 - **Interaction**: 
     - Click on any slide thumbnail to jump to that slide.
-    - No animation required when jumping directly to slide.
     - Toggle visibility by clicking the grid icon in header.
     - Remains visible until grid icon is clicked again.
 
@@ -83,55 +84,90 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 ## 4. Functional Behavior
 
 ### 4.1 Slide Rendering
-- Each slide is defined in a JS array loaded from an external script
-- all slides should be prendered on loading for max performance.
-- display slide placeholder animation while pre-rendering the slides in hidden blocks. 
-- Navigating to a slide becomes a matter of moving slide pre-rendered blocks into and out of view
-- A slide object includes:
-    - `id`: unique string.
+- **Data source**: Slides are defined in a JS array loaded from `slides.js` as a default export
+- **Initial slide selection**: 
+    - Check URL hash (`#slide-id`) to determine starting slide
+    - Default to first slide (index 0) if no hash or invalid hash provided
+    - Update URL hash when navigating between slides
+- **Progressive loading strategy**:
+    - Load and render the current slide immediately on page load
+    - Display slide placeholder animation only while the initial current slide is loading
+    - After current slide loads, progressively preload all other slides in the background
+    - Once a slide is loaded, navigating to it becomes instant (no loading required)
+- **Loading states**:
+    - **Placeholder animation**: CSS-based spinner centered in slide area
+    - **Image loading placeholders**: Show spinner for images still loading (rare due to preloading)
+    - **Background loading progress**: Log preloading progress to console only
+    - **No error handling**: No fallback required if slides.js fails to load
+    - **No timeouts**: No timeout specifications required at this stage
+- **Future extensibility**: The slides.js loading will later be replaced by API calls
+- **Slide object structure**:
+    - `id`: unique string (used in URL hash)
     - `title`: optional string 
-    - `template`: `"html"` | `"img"`.
-    - `html`: optional HTML markup for textual slides.
-    - `src`: optional image URL for image slides.
-    - `additional`: optional HTML content to show below the slide.
+    - `template`: `"html"` | `"img"`
+    - `html`: optional HTML markup for textual slides
+    - `src`: optional image URL for image slides
+    - `additional`: optional HTML content to show below the slide
+- **Sample data structure** (5-6 slides with varied content):
+    - Slide 1: Simple HTML content only
+    - Slide 2: HTML content with additional content below
+    - Slide 3: HTML content with additional content below
+    - Slide 4: Image slide only
+    - Slide 5: Image slide with additional content below
+    - Slide 6: Simple HTML content only
 
 ### 4.2 Navigation
 - Navigation can be triggered by:
     - Clicks on previous/next buttons.
     - Keyboard input (as listed above).
     - Swipe gestures (see below).
-- Animation effect when changing slides (slide in from left or from right)
 - **Swipe gestures**:
     - Swipe left → Next slide.
     - Swipe right → Previous slide.
     - Should ignore mostly vertical drags (for scrolling additional content).
     - Must work via touch or pointer events across modern devices.
 - Navigating between slides should
-    - **First Scroll the page to the top** (in case the previous slide’s content was scrolled down) to ensure animation is done at slide level
-    - Always re-center the stage.
+    - **Scroll the page to the top** (in case the previous slide’s content was scrolled down).
 
-### 4.3 Slide Overview Navigation
+### 4.3 URL Management and Browser Navigation
+- **URL hash updates**: Update the URL hash (`#slide-id`) whenever slide changes via any navigation method
+- **Browser navigation**: Support browser back/forward buttons to navigate between slides
+- **No page reloads**: All navigation must stay within the page using hash-based routing
+- **Invalid URL handling**: If URL contains invalid slide ID, default to first slide (index 0) and update hash accordingly
+- **Page title updates**: Update document title to reflect current slide:
+    - Format: `"Slide Title - Presentation"` (if slide has title)
+    - Format: `"Slide X - Presentation"` (if no title, where X is slide number)
+    - Default: `"Presentation"` (during loading)
+
+### 4.4 Slide Overview Navigation
 - Clicking the grid icon in the header toggles the slide overview bar.
 - **Show behavior**: Bar slides up from the bottom with smooth animation.
 - **Hide behavior**: Bar slides down and disappears when grid icon is clicked again.
 - **Slide selection**: Clicking any slide thumbnail navigates to that slide and keeps the overview visible.
-  - No animation required when navigating to a slide via the slide overview.
 - **Positioning logic**: 
     - When no additional content: Stays fixed at bottom of slide area.
     - When additional content exists: Moves with scroll to remain at slide bottom edge.
 
-### 4.4 Fullscreen Mode
-- Clicking the fullscreen button or pressing the `F` key toggles fullscreen.
+### 4.5 Hamburger Menu
+- Clicking the hamburger icon toggles a dropdown menu.
+- **Menu items**:
+    - **Fullscreen**: Toggles fullscreen mode for the entire presentation
+    - **Bookmarks**: Placeholder item (no functionality required at this stage)
+    - **About**: Placeholder item (no functionality required at this stage)
+- Menu closes when clicking outside or selecting an item.
+
+### 4.5 Fullscreen Mode
+- Clicking the fullscreen option in the hamburger menu or pressing the `F` key toggles fullscreen.
 - Fullscreen applies to the entire presentation page (not just the slide).
 
-### 4.5 Scaling Logic
+### 4.6 Scaling Logic
 - The slide’s visible size is determined by:
     - The available width and height of the viewport minus header and paddings.
     - The fixed base ratio (4:3).
 - The scaling operation should:
     - Maintain proportional scaling on both axes.
     - Update dynamically when the window is resized or orientation changes.
-    - Update after every slide change.
+    - Verify scaling remains correct after slide change.
     - No reflow based on screen proportions only scaling
 
 ### 4.6 Auto-Hide Navigation
@@ -219,8 +255,9 @@ The design should make it easy to add future features such as:
 
 ## 10. Deliverables
 - **multiple files:** with root file being `index.html`
-    - seperate HTML, CSS, and JS (no build pipeline).
-    - Loads Bootstrap 5 and Bootstrap Icons via CDN.
+    - seperate HTML, CSS, and JS (no build pipeline)
+    - `slides.js` with sample slide data as default export
+    - Loads Bootstrap 5 and Bootstrap Icons via CDN
     - Fully responsive 
 ---
 
@@ -236,7 +273,6 @@ The design should make it easy to add future features such as:
 - [ ] Buttons, keyboard, and swipe all work.
 - [ ] Page auto-scrolls to top on slide change.
 - [ ] Auto-hide works after 1 second of inactivity.
-- [ ] smooth animation when navigation to next and previoua slides
 
 ### Fullscreen
 - [ ] Toggling fullscreen works with button or `F` key.
@@ -251,7 +287,7 @@ The design should make it easy to add future features such as:
 - Clean, modular code (easy to extend).
 - Cross-browser responsive layout.
 - Fluid scaling without visible lag.
-- No external dependencies beyond Bootstrap and Bootstrap Icons and animation and swipe libraries
+- No external dependencies beyond Bootstrap and Bootstrap Icons and swipe libraries
 
 ---
 
