@@ -4,7 +4,7 @@
 Create a **single-page, client-side web application** that displays a presentation composed of multiple slides.  
 The slide area must always maintain a **4:3 aspect ratio (1024×768 logical size)** and scale automatically to fit within the browser viewport, beneath a fixed header, without scrollbars unless additional slide content requires them.
 
-The experience should feel similar to a PowerPoint or Keynote viewer, with navigation, autoplay, fullscreen, and optional content below each slide.
+The experience should feel similar to a PowerPoint or Keynote viewer, with navigation, fullscreen, and optional content below each slide.
 
 ---
 
@@ -82,11 +82,13 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 ## 4. Functional Behavior
 
 ### 4.1 Slide Rendering
-- Each slide is defined in a JS array or data source.
+- Each slide is defined in a JS array loaded from an external script
+- all slides should be prendered on loading for max performance.
+- first slide displayed immediately while pre-rendering the other slides in hidden blocks. 
 - A slide object includes:
     - `id`: unique string.
     - `title`: optional string 
-    - `kind`: `"html"` or `"image"`.
+    - `tenplate`: `"html"` or `"image"`.
     - `html`: optional HTML markup for textual slides.
     - `src`: optional image URL for image slides.
     - `additional`: optional HTML content to show below the slide.
@@ -96,20 +98,23 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - Clicks on previous/next buttons.
     - Keyboard input (as listed above).
     - Swipe gestures (see below).
+    - animation effect when sliding alides (slide in from left or from right)
+    - always have precache previous and next slide if possible
 - **Swipe gestures**:
     - Swipe left → Next slide.
     - Swipe right → Previous slide.
     - Should ignore mostly vertical drags (for scrolling additional content).
     - Must work via touch or pointer events across modern devices.
-- Navigating between slides should:
+- Navigating between slides should
+    - **First Scroll the page to the top** (in case the previous slide’s content was scrolled down) to ensure animation is done at slide level
     - Always re-center the stage.
-    - **Scroll the page to the top** (in case the previous slide’s content was scrolled down).
 
 ### 4.3 Slide Overview Navigation
 - Clicking the grid icon in the header toggles the slide overview bar.
 - **Show behavior**: Bar slides up from the bottom with smooth animation.
 - **Hide behavior**: Bar slides down and disappears when grid icon is clicked again.
-- **Slide selection**: Clicking any slide thumbnail immediately navigates to that slide and keeps the overview visible.
+- **Slide selection**: Clicking any slide thumbnail immediately navigates to that slide and keeps the overview visible. No animation is required when navigating direvtly to a slide.
+- precaching ahould done poste navigation. 
 - **Positioning logic**: 
     - When no additional content: Stays fixed at bottom of slide area.
     - When additional content exists: Moves with scroll to remain at slide bottom edge.
@@ -143,7 +148,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 | `BASE_W` | Logical base width of slide | `1024` |
 | `BASE_H` | Logical base height of slide | `768` |
 
-These values must be declared as configurable constants at the top of the script.
+These values must be declared as configurable constants for easy update. 
 
 ---
 
@@ -174,6 +179,8 @@ Always use the CGI brand color specifications below:
 - HEX: #000000
 - CMYK: C0 M0 Y0 K100
 
+gradients are acceptable when applicable
+
 ### 6.2 Design Guidelines
 - **Theme**: White / light-gray background with CGI brand color accents (red and purple).
 - **Slide background**: White with soft shadow and rounded corners.
@@ -183,15 +190,11 @@ Always use the CGI brand color specifications below:
     - Legible on both mobile and desktop.
 - **Buttons**: Bootstrap-styled with light borders and subtle hover feedback using brand colors.
 - **Menu**: Compact dropdown for quick actions (Bootstrap dropdown or equivalent).
-- **Progress bar**: Thin, rounded, gradient-filled using CGI brand colors (red to purple gradient).
 
 ---
 
 ## 7. Accessibility & Usability
-- Use descriptive `aria-label` attributes for all controls.
-- Maintain keyboard accessibility for navigation and menus.
-- Maintain readable contrast between text and background.
-- When changing slides, focus should not jump away from the presentation area.
+- Not required at this stage. 
 
 ---
 
@@ -209,20 +212,15 @@ Always use the CGI brand color specifications below:
 ## 9. Future Extensibility (Optional)
 The design should make it easy to add future features such as:
 - Aspect-ratio switching (4:3 ↔ 16:9).
-- Content fetching from CMS or remote JSON.
-- Slide transitions (fade, slide).
-- Notes or speaker mode.
-- Print or PDF export.
+- Content fetching from CMS or remote JSON
 
 ---
 
 ## 10. Deliverables
-- **Single file:** `index.html`
-    - Includes all HTML, CSS, and JS (no build pipeline).
+- **multiple files:** with root file being `index.html`
+    - seperate HTML, CSS, and JS (no build pipeline).
     - Loads Bootstrap 5 and Bootstrap Icons via CDN.
-    - Fully responsive and self-contained.
-- Optional: A brief `README.md` with usage instructions.
-
+    - Fully responsive 
 ---
 
 ## 11. Acceptance Criteria
@@ -237,23 +235,22 @@ The design should make it easy to add future features such as:
 - [ ] Buttons, keyboard, and swipe all work.
 - [ ] Page auto-scrolls to top on slide change.
 - [ ] Auto-hide works after 1 second of inactivity.
+- [ ] smooth animation when navigation to next and previoua slides
 
 ### Fullscreen
 - [ ] Toggling fullscreen works with button or `F` key.
 
 ### Usability
-- [ ] Controls have accessible labels.
-- [ ] Focus and keyboard navigation are intuitive.
 - [ ] Layout adjusts cleanly on window resize.
 
 ---
 
 ## 12. Non-Functional Criteria
-- Lightweight, single file (under 200 KB uncompressed).
+- Lightweight
 - Clean, modular code (easy to extend).
 - Cross-browser responsive layout.
 - Fluid scaling without visible lag.
-- No external dependencies beyond Bootstrap and Bootstrap Icons.
+- No external dependencies beyond Bootstrap and Bootstrap Icons and animation and swipe libraries
 
 ---
 
