@@ -246,11 +246,15 @@ function initializeStage() {
     // Initial scaling
     calculateStageScale();
 
-    // Add resize listeners
-    window.addEventListener('resize', debounce(calculateStageScale, 100));
+    // Add robust resize listeners with specialized debounce to prevent jitter
+    window.addEventListener('resize', debounceResize(calculateStageScale, 150));
     window.addEventListener('orientationchange', function() {
-        // Small delay to allow orientation change to complete
-        setTimeout(calculateStageScale, 100);
+        // Longer delay to allow orientation change to fully complete on mobile devices
+        setTimeout(() => {
+            calculateStageScale();
+            // Force a second calculation after a brief delay to handle any remaining layout settling
+            setTimeout(calculateStageScale, 50);
+        }, 200);
     });
 
     console.log('Stage initialized with scaling');
@@ -259,51 +263,65 @@ function initializeStage() {
 function calculateStageScale() {
     if (!stageElement || !stageWrapElement) return;
 
-    // Get header height
-    const header = document.getElementById('app-header');
-    const headerHeight = header ? header.offsetHeight : 60;
+    // Use requestAnimationFrame to avoid forced synchronous layout
+    requestAnimationFrame(() => {
+        // Get header height - use cached value if possible to avoid layout thrashing
+        const header = document.getElementById('app-header');
+        const headerHeight = header ? header.offsetHeight : 60;
 
-    // Calculate available space
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+        // Calculate available space
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-    // Account for padding and header
-    const padding = 32; // 1rem * 2 for padding on both sides
-    const availableWidth = viewportWidth - padding;
-    const availableHeight = viewportHeight - headerHeight - padding;
+        // Account for padding and header
+        const padding = 32; // 1rem * 2 for padding on both sides
+        const availableWidth = viewportWidth - padding;
+        const availableHeight = viewportHeight - headerHeight - padding;
 
-    // Calculate scale based on 4:3 ratio
-    const scaleByWidth = availableWidth / BASE_W;
-    const scaleByHeight = availableHeight / BASE_H;
+        // Calculate scale based on 4:3 ratio
+        const scaleByWidth = availableWidth / BASE_W;
+        const scaleByHeight = availableHeight / BASE_H;
 
-    // Use the smaller scale to ensure it fits
-    const scale = Math.min(scaleByWidth, scaleByHeight); // Allow scaling beyond 1:1
-    // Apply scaling
-    currentScale = scale;
+        // Use the smaller scale to ensure it fits
+        const newScale = Math.min(scaleByWidth, scaleByHeight);
 
-    // Set the stage size
-    const stageWidth = BASE_W * scale;
-    const stageHeight = BASE_H * scale;
+        // Only update if scale has changed significantly to prevent unnecessary updates
+        if (Math.abs(newScale - currentScale) < 0.001) {
+            return;
+        }
 
-    stageElement.style.width = `${stageWidth}px`;
-    stageElement.style.height = `${stageHeight}px`;
-    stageElement.style.maxWidth = `${stageWidth}px`;
+        // Apply scaling
+        currentScale = newScale;
 
-    // Reapply content scaling if content exists
-    const contentContainer = stageElement.querySelector('.slide-content');
-    if (contentContainer) {
-        applyContentScaling(contentContainer);
-    }
+        // Set the stage size
+        const stageWidth = BASE_W * currentScale;
+        const stageHeight = BASE_H * currentScale;
 
-    // Update additional content width to match scaled stage
-    updateAdditionalContentWidth();
+        // Batch DOM updates to prevent layout thrashing
+        stageElement.style.width = `${stageWidth}px`;
+        stageElement.style.height = `${stageHeight}px`;
+        stageElement.style.maxWidth = `${stageWidth}px`;
 
-    // Update overview positioning after scale changes
-    if (isOverviewVisible) {
-        setTimeout(() => updateOverviewPosition(), 100);
-    }
+        // Reapply content scaling if content exists
+        const contentContainer = stageElement.querySelector('.slide-content');
+        if (contentContainer) {
+            applyContentScaling(contentContainer);
+        }
 
-    console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${scale.toFixed(3)})`);
+        // Update additional content width to match scaled stage (debounced)
+        requestAnimationFrame(() => {
+            updateAdditionalContentWidth();
+        });
+
+        // Update overview positioning after scale changes (debounced)
+        if (isOverviewVisible) {
+            requestAnimationFrame(() => {
+                setTimeout(() => updateOverviewPosition(), 50);
+            });
+        }
+
+        console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${currentScale.toFixed(3)})`);
+    });
 }
 
 function renderAdditionalContent(slide) {
@@ -332,7 +350,15 @@ function updateAdditionalContentWidth() {
 
     // Calculate the effective width of the scaled stage
     const stageWidth = BASE_W * currentScale;
-    additionalContent.style.width = `${stageWidth}px`;
+
+    // Only update if the width has actually changed to prevent unnecessary reflows
+    const currentWidth = parseFloat(additionalContent.style.width) || 0;
+    const newWidth = Math.round(stageWidth);
+
+    if (Math.abs(currentWidth - newWidth) > 1) {
+        additionalContent.style.width = `${newWidth}px`;
+        console.log(`Additional content width updated to ${newWidth}px`);
+    }
 }
 
 // Progressive preload functionality
@@ -872,15 +898,67 @@ function hideNavigationButtons() {
     }
 }
 
-// Debounce utility function
-function debounce(func, wait) {
+// Enhanced debounce utility function with immediate option
+function debounce(func, wait, immediate = false) {
     let timeout;
+    let callCount = 0;
+
     return function executedFunction(...args) {
         const later = () => {
-            clearTimeout(timeout);
-            func(...args);
+            timeout = null;
+            if (!immediate) {
+                callCount++;
+                func.apply(this, args);
+
+                // Reset call count after a period of inactivity
+                setTimeout(() => {
+                    callCount = 0;
+                }, wait * 2);
+            }
         };
+
+        const callNow = immediate && !timeout;
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
+
+        if (callNow) {
+            callCount++;
+            func.apply(this, args);
+        }
+    };
+}
+
+// Specialized debounce for rapid resize events that prevents excessive calls
+function debounceResize(func, wait) {
+    let timeout;
+    let rafId;
+    let lastCallTime = 0;
+
+    return function executedFunction(...args) {
+        const now = Date.now();
+        const timeSinceLastCall = now - lastCallTime;
+
+        // Cancel any pending animation frame
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+        }
+
+        clearTimeout(timeout);
+
+        // If it's been a while since the last call, execute immediately
+        if (timeSinceLastCall > wait * 2) {
+            lastCallTime = now;
+            rafId = requestAnimationFrame(() => {
+                func.apply(this, args);
+            });
+        } else {
+            // Otherwise, debounce normally
+            timeout = setTimeout(() => {
+                lastCallTime = Date.now();
+                rafId = requestAnimationFrame(() => {
+                    func.apply(this, args);
+                });
+            }, wait);
+        }
     };
 }
