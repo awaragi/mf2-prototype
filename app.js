@@ -122,7 +122,39 @@ function calculateStageScale() {
         applyContentScaling(contentContainer);
     }
 
+    // Update additional content width to match scaled stage
+    updateAdditionalContentWidth();
+
     console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${scale.toFixed(3)})`);
+}
+
+function renderAdditionalContent(slide) {
+    const additionalSection = document.getElementById('additional');
+    const additionalContent = document.getElementById('additional-content');
+
+    if (!additionalSection || !additionalContent) return;
+
+    if (slide.additional) {
+        // Show additional content
+        additionalContent.innerHTML = slide.additional;
+        additionalSection.classList.add('visible');
+
+        // Set width to match scaled stage
+        updateAdditionalContentWidth();
+    } else {
+        // Hide additional content
+        additionalSection.classList.remove('visible');
+        additionalContent.innerHTML = '';
+    }
+}
+
+function updateAdditionalContentWidth() {
+    const additionalContent = document.getElementById('additional-content');
+    if (!additionalContent) return;
+
+    // Calculate the effective width of the scaled stage
+    const stageWidth = BASE_W * currentScale;
+    additionalContent.style.width = `${stageWidth}px`;
 }
 
 // Progressive preload functionality
@@ -329,6 +361,9 @@ function renderSlide(slide) {
     // Apply scaling transform
     applyContentScaling(contentContainer);
 
+    // Handle additional content in separate section
+    renderAdditionalContent(slide);
+
     // Hide loading after a short delay
     setTimeout(() => showLoading(false), 300);
 }
@@ -345,16 +380,6 @@ function renderHtmlSlide(container, slide) {
     content.style.overflow = 'auto';
 
     content.innerHTML = slide.html;
-
-    // Add additional content if present
-    if (slide.additional) {
-        const additionalDiv = document.createElement('div');
-        additionalDiv.className = 'additional-content';
-        additionalDiv.style.marginTop = '2rem';
-        additionalDiv.style.fontSize = '0.9em';
-        additionalDiv.innerHTML = slide.additional;
-        content.appendChild(additionalDiv);
-    }
 
     container.appendChild(content);
 }
@@ -388,23 +413,6 @@ function renderImageSlide(container, slide) {
     content.style.boxSizing = 'border-box';
 
     content.appendChild(img);
-
-    // Add additional content if present
-    if (slide.additional) {
-        const additionalDiv = document.createElement('div');
-        additionalDiv.className = 'additional-content';
-        additionalDiv.style.position = 'absolute';
-        additionalDiv.style.bottom = '20px';
-        additionalDiv.style.left = '20px';
-        additionalDiv.style.right = '20px';
-        additionalDiv.style.background = 'rgba(255, 255, 255, 0.9)';
-        additionalDiv.style.padding = '15px';
-        additionalDiv.style.borderRadius = '8px';
-        additionalDiv.innerHTML = slide.additional;
-        content.appendChild(additionalDiv);
-        content.style.position = 'relative';
-    }
-
     container.appendChild(content);
 }
 
