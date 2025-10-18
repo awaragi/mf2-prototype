@@ -1,6 +1,9 @@
 // Presentation App Logic
 // Application logic will be added in subsequent stages
 
+// Import slides data
+import slides from './slides.js';
+
 // Configuration constants
 const INACTIVITY_HIDE_MS = 1000;
 const BASE_W = 1024;
