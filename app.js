@@ -15,13 +15,20 @@ let stageElement;
 let stageWrapElement;
 let currentSlideIndex = 0;
 
+// Preload cache for images
+const imageCache = new Map();
+let preloadProgress = 0;
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Presentation app initialized');
     initializeHeader();
     initializeStage();
     initializeNavigation();
+    initializeNavigationButtons();
     loadSlideFromHash();
+    // Start preloading after initial render
+    setTimeout(() => startProgressivePreload(), 500);
 });
 
 // Header functionality
@@ -118,6 +125,54 @@ function calculateStageScale() {
     console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${scale.toFixed(3)})`);
 }
 
+// Progressive preload functionality
+function startProgressivePreload() {
+    console.log('Starting progressive preload...');
+    preloadProgress = 0;
+
+    const imageSlides = slides.filter(slide => slide.template === 'img');
+    const totalImages = imageSlides.length;
+
+    if (totalImages === 0) {
+        console.log('No images to preload');
+        return;
+    }
+
+    // Preload images one by one to avoid overwhelming the browser
+    let loadedCount = 0;
+
+    imageSlides.forEach((slide, index) => {
+        setTimeout(() => {
+            preloadImage(slide).then(() => {
+                loadedCount++;
+                preloadProgress = loadedCount;
+                console.log(`Preloaded ${loadedCount} / ${totalImages}`);
+            }).catch((error) => {
+                console.warn(`Failed to preload image for slide ${slide.id}:`, error);
+                loadedCount++;
+                preloadProgress = loadedCount;
+            });
+        }, index * 200); // Stagger the requests
+    });
+}
+
+function preloadImage(slide) {
+    return new Promise((resolve, reject) => {
+        if (imageCache.has(slide.id)) {
+            resolve(imageCache.get(slide.id));
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            imageCache.set(slide.id, img);
+            resolve(img);
+        };
+        img.onerror = reject;
+        img.src = slide.src;
+    });
+}
+
 // Navigation and slide management
 function initializeNavigation() {
     // Listen for hash changes
@@ -127,12 +182,12 @@ function initializeNavigation() {
     document.addEventListener('keydown', function(e) {
         switch(e.key) {
             case 'ArrowLeft':
-            case 'ArrowUp':
+            case 'PageUp':
                 e.preventDefault();
                 navigateSlide(-1);
                 break;
             case 'ArrowRight':
-            case 'ArrowDown':
+            case 'PageDown':
             case ' ':
                 e.preventDefault();
                 navigateSlide(1);
@@ -147,6 +202,26 @@ function initializeNavigation() {
                 break;
         }
     });
+}
+
+function initializeNavigationButtons() {
+    // Previous button
+    const prevBtn = document.getElementById('btn-prev');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            navigateSlide(-1);
+        });
+    }
+
+    // Next button
+    const nextBtn = document.getElementById('btn-next');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            navigateSlide(1);
+        });
+    }
+
+    console.log('Navigation buttons initialized');
 }
 
 function loadSlideFromHash() {
@@ -176,11 +251,17 @@ function navigateToSlide(index) {
     currentSlideIndex = index;
     const slide = slides[index];
 
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     // Update URL hash
     window.history.replaceState(null, null, `#${slide.id}`);
 
     // Update header title
     updateHeaderTitle(slide.title);
+
+    // Update document title
+    document.title = `Presentation - ${slide.title}`;
 
     // Render slide content
     renderSlide(slide);
@@ -256,7 +337,16 @@ function renderHtmlSlide(container, slide) {
 
 function renderImageSlide(container, slide) {
     const img = document.createElement('img');
-    img.src = slide.src;
+
+    // Use cached image if available, otherwise load normally
+    if (imageCache.has(slide.id)) {
+        const cachedImg = imageCache.get(slide.id);
+        img.src = cachedImg.src;
+        console.log(`Using cached image for slide ${slide.id}`);
+    } else {
+        img.src = slide.src;
+    }
+
     img.alt = slide.title;
     img.style.maxWidth = '100%';
     img.style.maxHeight = '100%';
@@ -295,8 +385,7 @@ function renderImageSlide(container, slide) {
 }
 
 function applyContentScaling(contentContainer) {
-    const scale = currentScale;
-    contentContainer.style.transform = `scale(${scale})`;
+    contentContainer.style.transform = `scale(${currentScale})`;
     contentContainer.style.transformOrigin = 'top left';
 }
 
