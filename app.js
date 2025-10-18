@@ -47,13 +47,27 @@ function initializeHeader() {
         });
     }
 
-    // Menu item handlers (placeholder functionality)
-    const fullscreenBtn = document.getElementById('menu-fullscreen');
+    // Menu item handlers
+    const fullscreenBtn = document.getElementById('btn-fullscreen');
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', function() {
-            console.log('Fullscreen clicked (functionality will be added later)');
+            toggleFullscreen();
         });
     }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        const dropdown = document.querySelector('#btn-menu').closest('.dropdown');
+        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+
+        if (!dropdown.contains(e.target) && dropdownMenu.classList.contains('show')) {
+            // Close dropdown
+            const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
+            if (dropdownToggle) {
+                dropdownToggle.hide();
+            }
+        }
+    });
 
     // Grid button handler
     const gridBtn = document.getElementById('btn-grid');
@@ -363,6 +377,16 @@ function initializeNavigation() {
                 e.preventDefault();
                 navigateToSlide(slides.length - 1);
                 break;
+            case 'g':
+            case 'G':
+                e.preventDefault();
+                toggleOverview();
+                break;
+            case 'f':
+            case 'F':
+                e.preventDefault();
+                toggleFullscreen();
+                break;
         }
     });
 }
@@ -562,6 +586,36 @@ function showLoading(show) {
     if (loadingElement) {
         loadingElement.style.display = show ? 'flex' : 'none';
         loadingElement.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
+}
+
+// Fullscreen functionality
+function toggleFullscreen() {
+    if (!document.fullscreenEnabled) {
+        console.warn('Fullscreen API not supported');
+        return;
+    }
+
+    if (document.fullscreenElement) {
+        // Exit fullscreen
+        document.exitFullscreen().then(() => {
+            console.log('Exited fullscreen mode');
+        }).catch((error) => {
+            console.error('Error exiting fullscreen:', error);
+        });
+    } else {
+        // Enter fullscreen
+        document.documentElement.requestFullscreen().then(() => {
+            console.log('Entered fullscreen mode');
+        }).catch((error) => {
+            console.error('Error entering fullscreen:', error);
+        });
+    }
+
+    // Close the dropdown menu after selection
+    const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
+    if (dropdownToggle) {
+        dropdownToggle.hide();
     }
 }
 
