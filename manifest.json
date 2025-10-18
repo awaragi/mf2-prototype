@@ -1,0 +1,6 @@
+{
+  "name": "Presentation App",
+  "short_name": "Presentation",
+  "start_url": ".",
+  "display": "standalone"
+}
