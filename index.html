@@ -79,7 +79,9 @@
 
     <div class="presentations-list">
         <ul id="presentations-list">
-            <!-- Presentations will be loaded here -->
+            <li style="text-align: center; color: #666; font-style: italic;">
+                Loading presentations...
+            </li>
         </ul>
     </div>
 
@@ -87,31 +89,51 @@
         <p>Select a presentation above to start viewing slides</p>
     </div>
 
-    <script type="module">
-        import slidesData from './slides.js';
+    <script>
+        async function loadPresentations() {
+            try {
+                const response = await fetch('./slides.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const slidesData = await response.json();
+                console.log('Slides loaded successfully', slidesData);
+                return slidesData;
+            } catch (error) {
+                console.error('Error loading presentations:', error);
+                return null;
+            }
+        }
 
-        function generatePresentationsList() {
-            const listElement = document.getElementById('presentations-list');
-            const presentations = slidesData.presentations;
-
-            presentations.forEach(presentation => {
-                const listItem = document.createElement('li');
-
-                // Create link to presentation's first slide
+        function createPresentationHTML(presentations) {
+            return presentations.map(presentation => {
                 const firstSlideId = presentation.slides[0]?.id || '';
                 const presentationUrl = `present.html#${presentation.id}/${firstSlideId}`;
 
-                listItem.innerHTML = `
-                    <a href="${presentationUrl}">
-                        ${presentation.title}
-                    </a>
-                    <div class="presentation-meta">
-                        ${presentation.slides.length} slide${presentation.slides.length !== 1 ? 's' : ''}
-                    </div>
+                return `
+                    <li>
+                        <a href="${presentationUrl}">
+                            ${presentation.title}
+                        </a>
+                        <div class="presentation-meta">
+                            ${presentation.slides.length} slide${presentation.slides.length !== 1 ? 's' : ''}
+                        </div>
+                    </li>
                 `;
+            }).join('');
+        }
 
-                listElement.appendChild(listItem);
-            });
+        async function generatePresentationsList() {
+            const listElement = document.getElementById('presentations-list');
+            const presentations = await loadPresentations();
+
+            if (!presentations) {
+                listElement.innerHTML = '<li style="color: red;">Error loading presentations. Please check if slides.json exists.</li>';
+                return;
+            }
+
+            // Replace placeholder with actual content
+            listElement.innerHTML = createPresentationHTML(presentations);
 
             console.log(`Loaded ${presentations.length} presentations`);
         }

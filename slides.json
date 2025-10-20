@@ -1,0 +1,78 @@
+[
+  {
+    "id": "strapi-presentation",
+    "title": "Strapi Integration Presentation",
+    "slides": [
+      {
+        "id": "intro",
+        "title": "Welcome to Our Presentation",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h1 style=\"font-size: 3rem;\">Welcome</h1>\n              <p style=\"font-size: 1.5rem;\">\n                Thank you for joining us today. We're excited to share our insights and discoveries with you.\n              </p>\n              <p style=\"font-size: 1.2rem;\">\n                Let's begin our journey together\n              </p>\n              <p><img src=\"attachments/strapi-logo.png\" alt=\"strapi-logo\" style=\"width: 20rem; max-width: 75%; height: auto;\" /></p>\n              <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus blanditiis dicta inventore, labore nihil nobis optio saepe soluta vel vitae. Asperiores dolorem dolorum harum itaque non, repellendus unde. Accusantium consequatur deleniti distinctio, ducimus earum esse est eveniet expedita illo illum ipsam, ipsum iure iusto magni nisi nulla pariatur rem repellendus rerum sed sint voluptas voluptatum! Adipisci assumenda dolore doloribus enim et id, libero magnam molestias nostrum obcaecati quibusdam saepe, sed tenetur vitae voluptatem. Aliquid at corporis debitis dignissimos dolor earum esse fugit iste, nostrum perspiciatis quasi quia quis quisquam repudiandae sequi suscipit tempora veniam? Consequatur ex maiores mollitia nulla tenetur.</p>\n            </div>\n          "
+      },
+      {
+        "id": "agenda",
+        "title": "Today's Agenda",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 2.5rem;\">Agenda</h2>\n              <ol style=\"font-size: 1.3rem;\">\n                <li>Introduction & Overview</li>\n                <li>Key Findings & Analysis</li>\n                <li>Visual Examples</li>\n                <li>Q&A and Next Steps</li>\n              </ol>\n            </div>\n          ",
+        "additional": "\n            <p style=\"font-size: 1rem;\">\n              <strong>Note:</strong> This presentation includes interactive elements. Feel free to ask questions at any time during our discussion.\n            </p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n            <p style=\"text-align: center\"><img src=\"attachments/strapi-logo.png\" alt=\"Strapi Logo\" style=\"width: 20rem; max-width: 75%; height: auto;\"></p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>\n          "
+      },
+      {
+        "id": "details",
+        "title": "Key Details & Insights",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 2.2rem;\">Key Insights</h2>\n              <div>\n                <h3 style=\"font-size: 1.5rem;\">Performance</h3>\n                <p style=\"font-size: 3rem;\">95%</p>\n                <p style=\"font-size: 1.1rem;\">Improvement in efficiency</p>\n              </div>\n              <div>\n                <h3 style=\"font-size: 1.5rem;\">Satisfaction</h3>\n                <p style=\"font-size: 3rem;\">4.8/5</p>\n                <p style=\"font-size: 1.1rem;\">User satisfaction rating</p>\n              </div>\n            </div>\n          ",
+        "additional": "\n            <div>\n              <h4 style=\"font-size: 1.3rem;\">Supporting Details:</h4>\n              <ul style=\"font-size: 1rem;\">\n                <li>Comprehensive analysis conducted over 6-month period</li>\n                <li>Data collected from 1,200+ participants across multiple demographics</li>\n                <li>Statistical significance verified with 95% confidence interval</li>\n                <li>Results validated through peer review and independent verification</li>\n                <li>Implementation recommendations based on evidence-based findings</li>\n              </ul>\n            </div>\n          "
+      },
+      {
+        "id": "image-1",
+        "title": "System Architecture Diagram",
+        "template": "img",
+        "src": "attachments/strapi-integration.png"
+      },
+      {
+        "id": "gallery",
+        "title": "Benefits of Strapi Integration",
+        "template": "img",
+        "src": "attachments/strapi-benefits.png",
+        "additional": "\n            <div style=\"text-align: center;\">\n              <p style=\"font-size: 1.2rem;\">\n                Strapi's headless CMS integration provides powerful content management capabilities while maintaining flexibility and scalability.\n              </p>\n              <p style=\"font-size: 1rem;\">\n                Diagram illustrates key benefits and integration points of the Strapi ecosystem.\n              </p>\n            </div>\n         "
+      },
+      {
+        "id": "outro",
+        "title": "Thank You",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 3rem;\">Thank You</h2>\n              <p style=\"font-size: 1.8rem;\">Questions & Discussion</p>\n              <p style=\"font-size: 1.2rem;\">\n                We appreciate your time and attention.<br>\n                Let's continue the conversation.\n              </p>\n            </div>\n          "
+      }
+    ]
+  },
+  {
+    "id": "tech-showcase",
+    "title": "Technology Showcase",
+    "slides": [
+      {
+        "id": "welcome",
+        "title": "Welcome to Technology Showcase",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h1 style=\"font-size: 3rem;\">Technology Showcase</h1>\n              <p style=\"font-size: 1.8rem;\">\n                Exploring the latest innovations and trends\n              </p>\n              <p style=\"font-size: 1.2rem;\">\n                A journey through cutting-edge solutions\n              </p>\n            </div>\n          "
+      },
+      {
+        "id": "innovations",
+        "title": "Recent Innovations",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 2.5rem;\">Recent Innovations</h2>\n              <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;\">\n                <div>\n                  <h3 style=\"font-size: 1.8rem;\">AI & Machine Learning</h3>\n                  <p style=\"font-size: 1.2rem;\">Revolutionary advances in artificial intelligence</p>\n                </div>\n                <div>\n                  <h3 style=\"font-size: 1.8rem;\">Cloud Computing</h3>\n                  <p style=\"font-size: 1.2rem;\">Scalable infrastructure solutions</p>\n                </div>\n              </div>\n            </div>\n          ",
+        "additional": "\n            <div>\n              <h4 style=\"font-size: 1.3rem;\">Key Technology Areas:</h4>\n              <ul style=\"font-size: 1rem;\">\n                <li>Machine Learning and Deep Learning frameworks</li>\n                <li>Edge computing and IoT integration</li>\n                <li>Serverless architecture patterns</li>\n                <li>Microservices and containerization</li>\n                <li>DevOps and continuous deployment</li>\n              </ul>\n            </div>\n          "
+      },
+      {
+        "id": "future-trends",
+        "title": "Future Trends",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 2.5rem;\">Future Trends</h2>\n              <div style=\"margin-top: 2rem;\">\n                <div style=\"margin-bottom: 2rem;\">\n                  <h3 style=\"font-size: 2rem; color: #007bff;\">Quantum Computing</h3>\n                  <p style=\"font-size: 1.3rem;\">Next-generation processing power</p>\n                </div>\n                <div>\n                  <h3 style=\"font-size: 2rem; color: #28a745;\">Sustainable Tech</h3>\n                  <p style=\"font-size: 1.3rem;\">Environmentally conscious development</p>\n                </div>\n              </div>\n            </div>\n          "
+      },
+      {
+        "id": "conclusion-tech",
+        "title": "Conclusion - Tech Showcase",
+        "template": "html",
+        "html": "\n            <div style=\"text-align: center;\">\n              <h2 style=\"font-size: 3rem;\">Thank You</h2>\n              <p style=\"font-size: 1.8rem;\">Questions & Discussion</p>\n              <p style=\"font-size: 1.2rem;\">\n                Let's continue exploring the future of technology together\n              </p>\n            </div>\n          "
+      }
+    ]
+  }
+]
