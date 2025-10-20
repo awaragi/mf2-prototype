@@ -2,7 +2,7 @@
 // Application logic will be added in subsequent stages
 
 // Import slides data
-import slides from './slides.js';
+import slidesData from './slides.js';
 
 // Configuration constants
 const INACTIVITY_HIDE_MS = 1000;
@@ -13,7 +13,13 @@ const BASE_H = 768;
 let currentScale = 1;
 let stageElement;
 let stageWrapElement;
+let currentPresentationIndex = 0;
 let currentSlideIndex = 0;
+
+// Get presentations array
+const presentations = slidesData.presentations;
+// Get current presentation slides
+let slides = presentations[currentPresentationIndex].slides;
 
 // Preload cache for images
 const imageCache = new Map();
@@ -193,7 +199,7 @@ function generateOverviewThumbnails() {
         thumbnailsContainer.appendChild(thumbnail);
     });
 
-    console.log(`Generated ${slides.length} overview thumbnails`);
+    console.log(`Generated ${slides.length} overview thumbnails for presentation: ${presentations[currentPresentationIndex].title}`);
 }
 
 function updateActiveOverviewThumbnail() {
@@ -379,7 +385,7 @@ function startProgressivePreload() {
     const totalImages = imageSlides.length;
 
     if (totalImages === 0) {
-        console.log('No images to preload');
+        console.log('No images to preload for current presentation');
         return;
     }
 
@@ -391,7 +397,7 @@ function startProgressivePreload() {
             preloadImage(slide).then(() => {
                 loadedCount++;
                 preloadProgress = loadedCount;
-                console.log(`Preloaded ${loadedCount} / ${totalImages}`);
+                console.log(`Preloaded ${loadedCount} / ${totalImages} for presentation: ${presentations[currentPresentationIndex].title}`);
             }).catch((error) => {
                 console.warn(`Failed to preload image for slide ${slide.id}:`, error);
                 loadedCount++;
@@ -481,40 +487,56 @@ function initializeNavigationButtons() {
 
 function loadSlideFromHash() {
     const hash = window.location.hash.slice(1);
+    let presentationIndex = 0;
     let slideIndex = 0;
-    let shouldFixHash = false;
+    let isValidHash = false;
 
-    if (hash) {
-        const foundIndex = slides.findIndex(slide => slide.id === hash);
-        if (foundIndex !== -1) {
-            slideIndex = foundIndex;
-        } else {
-            // Invalid hash - will default to first slide and fix hash
-            shouldFixHash = true;
-            console.warn(`Invalid slide hash: ${hash}, defaulting to first slide`);
+    if (hash && hash.includes('/')) {
+        const [presentationId, slideId] = hash.split('/', 2);
+
+        // Find presentation by ID
+        const foundPresentationIndex = presentations.findIndex(p => p.id === presentationId);
+        if (foundPresentationIndex !== -1) {
+            // Find slide within this presentation
+            const foundSlideIndex = presentations[foundPresentationIndex].slides.findIndex(slide => slide.id === slideId);
+            if (foundSlideIndex !== -1) {
+                // Valid hash found
+                presentationIndex = foundPresentationIndex;
+                slideIndex = foundSlideIndex;
+                isValidHash = true;
+            }
         }
-    } else if (currentSlideIndex !== 0) {
-        // No hash but we're not on first slide, go to first slide
+    }
+
+    // If hash is invalid, missing, or doesn't contain separator, redirect to first presentation/slide
+    if (!isValidHash) {
+        if (hash) {
+            console.warn(`Invalid hash format: ${hash}, redirecting to first presentation and slide`);
+        }
+        presentationIndex = 0;
         slideIndex = 0;
-        shouldFixHash = true;
+
+        // Redirect to correct hash
+        const presentation = presentations[0];
+        const slide = presentation.slides[0];
+        location.hash = `${presentation.id}/${slide.id}`;
+        return; // Let the hashchange event handle the rest
     }
 
-    // If we need to fix the hash or if it's empty, set it correctly
-    if (shouldFixHash || !hash) {
-        currentSlideIndex = slideIndex;
-        const slide = slides[slideIndex];
+    // Update current presentation if it changed
+    if (presentationIndex !== currentPresentationIndex) {
+        currentPresentationIndex = presentationIndex;
+        slides = presentations[currentPresentationIndex].slides;
 
-        // Update hash without triggering hashchange event
-        window.history.replaceState(null, null, `#${slide.id}`);
+        // Regenerate overview thumbnails for new presentation
+        generateOverviewThumbnails();
 
-        // Update UI directly
-        updateHeaderTitle(slide.title);
-        document.title = `Presentation - ${slide.title}`;
-        renderSlide(slide);
-    } else {
-        // Valid hash, navigate normally
-        navigateToSlide(slideIndex);
+        // Restart preloading for new presentation
+        setTimeout(() => startProgressivePreload(), 500);
     }
+
+    // Navigate to the slide
+    navigateToSlide(slideIndex);
 }
 
 function navigateSlide(direction) {
@@ -528,19 +550,20 @@ function navigateToSlide(index) {
     if (index < 0 || index >= slides.length) return;
 
     currentSlideIndex = index;
+    const presentation = presentations[currentPresentationIndex];
     const slide = slides[index];
 
     // Scroll to top of page
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Update URL hash - use location.hash for proper browser history
-    location.hash = slide.id;
+    location.hash = `${presentation.id}/${slide.id}`;
 
     // Update header title
     updateHeaderTitle(slide.title);
 
     // Update document title
-    document.title = `Presentation - ${slide.title}`;
+    document.title = `${presentation.title} - ${slide.title}`;
 
     // Render slide content
     renderSlide(slide);
