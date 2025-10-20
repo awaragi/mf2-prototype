@@ -66,8 +66,8 @@ function initializeHeader() {
     if (logoArea) {
         logoArea.addEventListener('click', function(e) {
             e.preventDefault();
-            location.hash = '';
-            console.log('Logo clicked - hash cleared');
+            location.href = '/';
+            console.log('Logo clicked - going back to main page');
         });
     }
 
