@@ -1,6 +1,6 @@
 # Execution Plan: Responsive Presentation Web App (4:3 Slide Deck)
 
-**Goal:** Implement the app in small, testable stages. After each stage, you can open `index.html` in a browser and validate the listed checks.  
+**Goal:** Implement the app in small, testable stages. After each stage, you can open `present.html` in a browser and validate the listed checks.  
 **Stack:** Vanilla HTML/CSS/JS, Bootstrap 5 + Bootstrap Icons (via CDN). No build tools.
 
 ---
@@ -10,24 +10,24 @@
 **Create files**
 ```
 / (root)
-  ├─ index.html
+  ├─ present.html
   ├─ styles.css
-  ├─ app.js
+  ├─ app-present.js
   ├─ slides.js
   └─ assets/
       └─ cgi-logo.png   (download from https://www.cgi.com/en/cgi-downloads)
 ```
 
-**Index skeleton**
+**Present skeleton**
 - Minimal HTML5 doc.
 - Load Bootstrap 5 CSS/JS and Bootstrap Icons via CDN.
-- Link `styles.css`, `app.js`, and `slides.js` (defer).
+- Link `styles.css`, `app-present.js`, and `slides.js` (defer).
 - Add root containers:
     - `<header id="app-header">...</header>`
     - `<main id="app-main">...</main>`
 
 **Test**
-- Open `index.html`. No console errors. Page shows empty header+main.
+- Open `present.html`. No console errors. Page shows empty header+main.
 
 ---
 
@@ -100,14 +100,14 @@
   ```
 
 **Test**
-- `slides.js` loads with no errors (temporarily log the array in `app.js`).
+- `slides.js` loads with no errors (temporarily log the array in `app-present.js`).
 
 ---
 
 ## Stage 4 — Slide Rendering (Initial Load)
 
 **Implement**
-- In `app.js`, import slides:
+- In `app-present.js`, import slides:
   ```js
   import slides from './slides.js';
   ```
@@ -370,10 +370,10 @@
 
 ## Deliverables
 
-- `index.html` — root file with header, stage, overview, and dropdown markup.
+- `present.html` — root file with header, stage, overview, and dropdown markup.
 - `styles.css` — theme, layout, buttons, overview animations, spinner.
-- `app.js` — all logic (scaling, render, nav, routing, preload, swipe, fullscreen, auto-hide).
+- `app-present.js` — all logic (scaling, render, nav, routing, preload, swipe, fullscreen, auto-hide).
 - `slides.js` — sample slides (6 items, per schema).
 - `assets/cgi-logo.png` — logo.
 
-> After **each stage**, commit, open `index.html`, and run the listed **Test** items before continuing.
+> After **each stage**, commit, open `present.html`, and run the listed **Test** items before continuing.

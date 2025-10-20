@@ -266,7 +266,7 @@ The design should make it easy to add future features such as:
 ---
 
 ## 10. Deliverables
-- **multiple files:** with root file being `index.html`
+- **multiple files:** with root file being `present.html`
     - separate HTML, CSS, and JS (no build pipeline)
     - `slides.js` with sample slide data as default export
     - CGI logo file (downloaded from https://www.cgi.com/en/cgi-downloads)
