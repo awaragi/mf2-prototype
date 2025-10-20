@@ -92,7 +92,7 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
 ## 4. Functional Behavior
 
 ### 4.1 Slide Rendering
-- **Data source**: Slides are defined in a JS array loaded from `slides.js` as a default export
+- **Data source**: Slides are defined in a JS array loaded from `presentations.js` as a default export
 - **Initial slide selection**: 
     - Check URL hash (`#slide-id`) to determine starting slide
     - Default to first slide (index 0) if no hash or invalid hash provided
@@ -106,9 +106,9 @@ The experience should feel similar to a PowerPoint or Keynote viewer, with navig
     - **Placeholder animation**: CSS-based spinner centered in slide area
     - **Image loading placeholders**: Show spinner for images still loading (rare due to preloading)
     - **Background loading progress**: Log preloading progress to console only
-    - **No error handling**: No fallback required if slides.js fails to load
+    - **No error handling**: No fallback required if presentations.js fails to load
     - **No timeouts**: No timeout specifications required at this stage
-- **Future extensibility**: The slides.js loading will later be replaced by API calls
+- **Future extensibility**: The presentations.js loading will later be replaced by API calls
 - **Slide object structure**:
     - `id`: unique string (used in URL hash)
     - `title`: optional string 
@@ -268,7 +268,7 @@ The design should make it easy to add future features such as:
 ## 10. Deliverables
 - **multiple files:** with root file being `present.html`
     - separate HTML, CSS, and JS (no build pipeline)
-    - `slides.js` with sample slide data as default export
+    - `presentations.js` with sample slide data as default export
     - CGI logo file (downloaded from https://www.cgi.com/en/cgi-downloads)
     - Loads Bootstrap 5 and Bootstrap Icons via CDN
     - Fully responsive 

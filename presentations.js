@@ -1,14 +1,13 @@
-export default {
-  presentations: [
+presentations = [
     {
-      id: "strapi-presentation",
-      title: "Strapi Integration Presentation", 
-      slides: [
-        {
-          id: "intro",
-          title: "Welcome to Our Presentation",
-          template: "html",
-          html: `
+        id: "strapi-presentation",
+        title: "Strapi Integration Presentation",
+        slides: [
+            {
+                id: "intro",
+                title: "Welcome to Our Presentation",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h1 style="font-size: 3rem;">Welcome</h1>
               <p style="font-size: 1.5rem;">
@@ -21,12 +20,12 @@ export default {
               <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus blanditiis dicta inventore, labore nihil nobis optio saepe soluta vel vitae. Asperiores dolorem dolorum harum itaque non, repellendus unde. Accusantium consequatur deleniti distinctio, ducimus earum esse est eveniet expedita illo illum ipsam, ipsum iure iusto magni nisi nulla pariatur rem repellendus rerum sed sint voluptas voluptatum! Adipisci assumenda dolore doloribus enim et id, libero magnam molestias nostrum obcaecati quibusdam saepe, sed tenetur vitae voluptatem. Aliquid at corporis debitis dignissimos dolor earum esse fugit iste, nostrum perspiciatis quasi quia quis quisquam repudiandae sequi suscipit tempora veniam? Consequatur ex maiores mollitia nulla tenetur.</p>
             </div>
           `
-        },
-        {
-          id: "agenda",
-          title: "Today's Agenda",
-          template: "html",
-          html: `
+            },
+            {
+                id: "agenda",
+                title: "Today's Agenda",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 2.5rem;">Agenda</h2>
               <ol style="font-size: 1.3rem;">
@@ -37,7 +36,7 @@ export default {
               </ol>
             </div>
           `,
-          additional: `
+                additional: `
             <p style="font-size: 1rem;">
               <strong>Note:</strong> This presentation includes interactive elements. Feel free to ask questions at any time during our discussion.
             </p>
@@ -49,12 +48,12 @@ export default {
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci distinctio doloremque expedita facilis perferendis perspiciatis, velit veniam. Accusantium consequatur nam quasi sit ullam veritatis. Adipisci assumenda, autem doloremque ea exercitationem facere fugiat harum, id illo incidunt ipsa, ipsam iste iure magnam placeat rem sed sequi tenetur ut voluptas. Consequuntur cumque dolor dolorem harum itaque. Ad aut autem deserunt doloribus eaque enim optio perspiciatis sit voluptatibus? A accusantium at dolorem itaque laboriosam laborum molestiae saepe sunt veniam! Commodi dolore dolores, ducimus illo in quis ratione rem reprehenderit repudiandae sequi? Accusamus aliquam doloremque ea facilis ipsum iure laudantium quod saepe, tenetur vero!</p>
           `
-        },
-        {
-          id: "details",
-          title: "Key Details & Insights",
-          template: "html",
-          html: `
+            },
+            {
+                id: "details",
+                title: "Key Details & Insights",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 2.2rem;">Key Insights</h2>
               <div>
@@ -69,7 +68,7 @@ export default {
               </div>
             </div>
           `,
-          additional: `
+                additional: `
             <div>
               <h4 style="font-size: 1.3rem;">Supporting Details:</h4>
               <ul style="font-size: 1rem;">
@@ -81,19 +80,19 @@ export default {
               </ul>
             </div>
           `
-        },
-        {
-          id: "image-1",
-          title: "System Architecture Diagram",
-          template: "img",
-          src: "attachments/strapi-integration.png",
-        },
-        {
-          id: "gallery",
-          title: "Benefits of Strapi Integration",
-          template: "img",
-          src: "attachments/strapi-benefits.png",
-          additional: `
+            },
+            {
+                id: "image-1",
+                title: "System Architecture Diagram",
+                template: "img",
+                src: "attachments/strapi-integration.png",
+            },
+            {
+                id: "gallery",
+                title: "Benefits of Strapi Integration",
+                template: "img",
+                src: "attachments/strapi-benefits.png",
+                additional: `
             <div style="text-align: center;">
               <p style="font-size: 1.2rem;">
                 Strapi's headless CMS integration provides powerful content management capabilities while maintaining flexibility and scalability.
@@ -103,12 +102,12 @@ export default {
               </p>
             </div>
          `
-        },
-        {
-          id: "outro",
-          title: "Thank You",
-          template: "html",
-          html: `
+            },
+            {
+                id: "outro",
+                title: "Thank You",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 3rem;">Thank You</h2>
               <p style="font-size: 1.8rem;">Questions & Discussion</p>
@@ -118,18 +117,18 @@ export default {
               </p>
             </div>
           `
-        }
-      ]
+            }
+        ]
     },
     {
-      id: "tech-showcase",
-      title: "Technology Showcase",
-      slides: [
-        {
-          id: "welcome",
-          title: "Welcome to Technology Showcase",
-          template: "html",
-          html: `
+        id: "tech-showcase",
+        title: "Technology Showcase",
+        slides: [
+            {
+                id: "welcome",
+                title: "Welcome to Technology Showcase",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h1 style="font-size: 3rem;">Technology Showcase</h1>
               <p style="font-size: 1.8rem;">
@@ -140,12 +139,12 @@ export default {
               </p>
             </div>
           `
-        },
-        {
-          id: "innovations",
-          title: "Recent Innovations",
-          template: "html",
-          html: `
+            },
+            {
+                id: "innovations",
+                title: "Recent Innovations",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 2.5rem;">Recent Innovations</h2>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
@@ -160,7 +159,7 @@ export default {
               </div>
             </div>
           `,
-          additional: `
+                additional: `
             <div>
               <h4 style="font-size: 1.3rem;">Key Technology Areas:</h4>
               <ul style="font-size: 1rem;">
@@ -172,12 +171,12 @@ export default {
               </ul>
             </div>
           `
-        },
-        {
-          id: "future-trends",
-          title: "Future Trends",
-          template: "html",
-          html: `
+            },
+            {
+                id: "future-trends",
+                title: "Future Trends",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 2.5rem;">Future Trends</h2>
               <div style="margin-top: 2rem;">
@@ -192,12 +191,12 @@ export default {
               </div>
             </div>
           `
-        },
-        {
-          id: "conclusion-tech",
-          title: "Conclusion - Tech Showcase",
-          template: "html",
-          html: `
+            },
+            {
+                id: "conclusion-tech",
+                title: "Conclusion - Tech Showcase",
+                template: "html",
+                html: `
             <div style="text-align: center;">
               <h2 style="font-size: 3rem;">Thank You</h2>
               <p style="font-size: 1.8rem;">Questions & Discussion</p>
@@ -206,8 +205,9 @@ export default {
               </p>
             </div>
           `
-        }
-      ]
+            }
+        ]
     }
-  ]
-};
+];
+
+console.log(JSON.stringify(presentations, null, 2));

@@ -13,7 +13,7 @@
   ├─ present.html
   ├─ styles.css
   ├─ app-present.js
-  ├─ slides.js
+  ├─ presentations.js
   └─ assets/
       └─ cgi-logo.png   (download from https://www.cgi.com/en/cgi-downloads)
 ```
@@ -21,7 +21,7 @@
 **Present skeleton**
 - Minimal HTML5 doc.
 - Load Bootstrap 5 CSS/JS and Bootstrap Icons via CDN.
-- Link `styles.css`, `app-present.js`, and `slides.js` (defer).
+- Link `styles.css`, `app-present.js`, and `presentations.js` (defer).
 - Add root containers:
     - `<header id="app-header">...</header>`
     - `<main id="app-main">...</main>`
@@ -77,7 +77,7 @@
 
 ---
 
-## Stage 3 — Sample Slide Data (slides.js)
+## Stage 3 — Sample Slide Data (presentations.js)
 
 **Implement**
 - Default export an array of 6 slides:
@@ -100,7 +100,7 @@
   ```
 
 **Test**
-- `slides.js` loads with no errors (temporarily log the array in `app-present.js`).
+- `presentations.js` loads with no errors (temporarily log the array in `app-present.js`).
 
 ---
 
@@ -109,7 +109,7 @@
 **Implement**
 - In `app-present.js`, import slides:
   ```js
-  import slides from './slides.js';
+  import slides from './presentations.js';
   ```
 - Determine initial slide from `location.hash` (`#slide-id`), else index 0.
 - While first slide is “loading”, show centered spinner (`#stage-loading` visible). After render, hide spinner.
@@ -373,7 +373,7 @@
 - `present.html` — root file with header, stage, overview, and dropdown markup.
 - `styles.css` — theme, layout, buttons, overview animations, spinner.
 - `app-present.js` — all logic (scaling, render, nav, routing, preload, swipe, fullscreen, auto-hide).
-- `slides.js` — sample slides (6 items, per schema).
+- `presentations.js` — sample slides (6 items, per schema).
 - `assets/cgi-logo.png` — logo.
 
 > After **each stage**, commit, open `present.html`, and run the listed **Test** items before continuing.

@@ -1,9 +1,6 @@
 // Presentation App Logic
 // Application logic will be added in subsequent stages
 
-// Import slides data
-import slidesData from './slides.js';
-
 // Configuration constants
 const INACTIVITY_HIDE_MS = 1000;
 const BASE_W = 1024;
@@ -16,10 +13,11 @@ let stageWrapElement;
 let currentPresentationIndex = 0;
 let currentSlideIndex = 0;
 
-// Get presentations array
-const presentations = slidesData.presentations;
-// Get current presentation slides
-let slides = presentations[currentPresentationIndex].slides;
+// Data loading state
+let presentations = [];
+let slides = [];
+let isDataLoaded = false;
+let isDataLoading = false;
 
 // Preload cache for images
 const imageCache = new Map();
@@ -43,6 +41,58 @@ let swipeState = {
     startTime: 0
 };
 
+// Load presentation data via AJAX
+async function loadPresentationData() {
+    if (isDataLoading || isDataLoaded) return;
+
+    isDataLoading = true;
+    showDataLoading(true);
+    disableAllInteractions();
+
+    try {
+        console.log('Loading presentation data from /slides.json...');
+        const response = await fetch('/slides.json');
+
+        if (!response.ok) {
+            throw new Error(`Failed to load slides: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        presentations = data || [];
+
+        if (presentations.length === 0) {
+            throw new Error('No presentations found in data');
+        }
+
+        // Set initial presentation and slides
+        slides = presentations[currentPresentationIndex].slides;
+        isDataLoaded = true;
+        isDataLoading = false;
+
+        console.log(`Loaded ${presentations.length} presentations from server`);
+
+        // Hide loading and enable interactions
+        showDataLoading(false);
+        enableAllInteractions();
+
+        // Initialize presentation-dependent functionality
+        initializePresentationFeatures();
+
+    } catch (error) {
+        console.error('Failed to load presentation data:', error);
+        isDataLoading = false;
+        showDataLoadingError(error.message);
+    }
+}
+
+// Initialize presentation-dependent features
+function initializePresentationFeatures() {
+    generateOverviewThumbnails();
+    loadSlideFromHash();
+    // Start preloading after initial render
+    setTimeout(() => startProgressivePreload(), 500);
+}
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Presentation app initialized');
@@ -53,10 +103,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeOverview();
     initializeSwipeGestures();
     initializeAutoHideNavigation();
-    loadSlideFromHash();
     initializeAboutModal();
-    // Start preloading after initial render
-    setTimeout(() => startProgressivePreload(), 500);
+
+    // Load presentation data first
+    loadPresentationData();
 });
 
 // Header functionality
@@ -137,6 +187,12 @@ function initializeOverview() {
 }
 
 function toggleOverview() {
+    // Don't show overview if data is not loaded
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping overview toggle');
+        return;
+    }
+
     const overviewElement = document.getElementById('overview');
     if (!overviewElement) return;
 
@@ -157,6 +213,12 @@ function toggleOverview() {
 function generateOverviewThumbnails() {
     const thumbnailsContainer = document.getElementById('overview-thumbnails');
     if (!thumbnailsContainer) return;
+
+    // Don't generate if data is not loaded
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping thumbnail generation');
+        return;
+    }
 
     // Clear existing thumbnails
     thumbnailsContainer.innerHTML = '';
@@ -378,6 +440,12 @@ function updateAdditionalContentWidth() {
 
 // Progressive preload functionality
 function startProgressivePreload() {
+    // Don't preload if data is not loaded
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping preload');
+        return;
+    }
+
     console.log('Starting progressive preload...');
     preloadProgress = 0;
 
@@ -486,6 +554,12 @@ function initializeNavigationButtons() {
 }
 
 function loadSlideFromHash() {
+    // Don't process hash changes if data is not loaded yet
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping hash processing');
+        return;
+    }
+
     const hash = window.location.hash.slice(1);
     let presentationIndex = 0;
     let slideIndex = 0;
@@ -521,8 +595,6 @@ function loadSlideFromHash() {
         if (hash) {
             console.warn(`Invalid hash format: ${hash}, redirecting to first presentation and slide`);
         }
-        presentationIndex = 0;
-        slideIndex = 0;
 
         // Redirect to correct hash
         const presentation = presentations[0];
@@ -548,6 +620,12 @@ function loadSlideFromHash() {
 }
 
 function navigateSlide(direction) {
+    // Don't navigate if data is not loaded
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping navigation');
+        return;
+    }
+
     const newIndex = currentSlideIndex + direction;
     if (newIndex >= 0 && newIndex < slides.length) {
         navigateToSlide(newIndex);
@@ -555,6 +633,12 @@ function navigateSlide(direction) {
 }
 
 function navigateToSlide(index) {
+    // Don't navigate if data is not loaded
+    if (!isDataLoaded) {
+        console.log('Data not loaded yet, skipping navigation');
+        return;
+    }
+
     if (index < 0 || index >= slides.length) return;
 
     currentSlideIndex = index;
@@ -692,6 +776,104 @@ function showLoading(show) {
     if (loadingElement) {
         loadingElement.style.display = show ? 'flex' : 'none';
         loadingElement.setAttribute('aria-hidden', show ? 'false' : 'true');
+    }
+}
+
+// Show/hide data loading state
+function showDataLoading(show) {
+    const loadingElement = document.getElementById('stage-loading');
+    if (loadingElement) {
+        if (show) {
+            loadingElement.style.display = 'flex';
+            loadingElement.setAttribute('aria-hidden', 'false');
+            // Update loading message for data loading
+            const spinner = loadingElement.querySelector('.visually-hidden');
+            if (spinner) {
+                spinner.textContent = 'Loading presentation data...';
+            }
+        } else {
+            loadingElement.style.display = 'none';
+            loadingElement.setAttribute('aria-hidden', 'true');
+            // Reset loading message
+            const spinner = loadingElement.querySelector('.visually-hidden');
+            if (spinner) {
+                spinner.textContent = 'Loading...';
+            }
+        }
+    }
+}
+
+// Show data loading error
+function showDataLoadingError(message) {
+    const stageElement = document.getElementById('stage');
+    if (stageElement) {
+        stageElement.innerHTML = `
+            <div class="slide-content error-content" style="width: ${BASE_W}px; height: ${BASE_H}px; position: absolute; top: 0; left: 0;">
+                <div style="padding: 40px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 4rem; color: #dc3545; margin-bottom: 1rem;"></i>
+                    <h3 style="color: #dc3545; margin-bottom: 1rem;">Failed to Load Presentations</h3>
+                    <p style="margin-bottom: 1rem;">${message}</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Retry
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Apply scaling to error content
+        const errorContent = stageElement.querySelector('.error-content');
+        if (errorContent) {
+            applyContentScaling(errorContent);
+        }
+    }
+
+    // Hide main loading indicator
+    showDataLoading(false);
+}
+
+// Disable all interactions during loading
+function disableAllInteractions() {
+    // Disable navigation buttons
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const gridBtn = document.getElementById('btn-grid');
+    const fullscreenBtn = document.getElementById('btn-fullscreen');
+
+    [prevBtn, nextBtn, gridBtn, fullscreenBtn].forEach(btn => {
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+        }
+    });
+
+    // Disable stage overlay
+    const stageOverlay = document.getElementById('stage-overlay');
+    if (stageOverlay) {
+        stageOverlay.style.pointerEvents = 'none';
+    }
+}
+
+// Enable all interactions after loading
+function enableAllInteractions() {
+    // Enable navigation buttons
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const gridBtn = document.getElementById('btn-grid');
+    const fullscreenBtn = document.getElementById('btn-fullscreen');
+
+    [prevBtn, nextBtn, gridBtn, fullscreenBtn].forEach(btn => {
+        if (btn) {
+            btn.disabled = false;
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
+        }
+    });
+
+    // Enable stage overlay
+    const stageOverlay = document.getElementById('stage-overlay');
+    if (stageOverlay) {
+        stageOverlay.style.pointerEvents = '';
     }
 }
 
