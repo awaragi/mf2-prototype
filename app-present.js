@@ -506,6 +506,14 @@ function loadSlideFromHash() {
                 isValidHash = true;
             }
         }
+    } else if (hash) {
+        // Treat hash without / as presentation ID
+        const foundPresentationIndex = presentations.findIndex(p => p.id === hash);
+        if (foundPresentationIndex !== -1) {
+            presentationIndex = foundPresentationIndex;
+            slideIndex = 0;
+            isValidHash = true;
+        }
     }
 
     // If hash is invalid, missing, or doesn't contain separator, redirect to first presentation/slide
