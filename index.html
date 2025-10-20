@@ -92,7 +92,7 @@
     <script>
         async function loadPresentations() {
             try {
-                const response = await fetch('./slides.json');
+                const response = await fetch('/api/slides.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

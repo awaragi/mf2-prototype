@@ -50,8 +50,8 @@ async function loadPresentationData() {
     disableAllInteractions();
 
     try {
-        console.log('Loading presentation data from /slides.json...');
-        const response = await fetch('/slides.json');
+        console.log('Loading presentation data from /api/slides.json...');
+        const response = await fetch('/api/slides.json');
 
         if (!response.ok) {
             throw new Error(`Failed to load slides: ${response.status} ${response.statusText}`);
