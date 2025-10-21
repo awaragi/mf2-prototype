@@ -2,33 +2,21 @@
 // Version: 1.0.0
 
 const CACHE_PREFIX = 'shell-v';
-let CACHE_NAME;
-let APP_VERSION;
-let SHELL_FILES = [];
 
-// Initialize cache configuration
-async function initializeCache() {
+// Load app manifest configuration
+async function loadAppManifest() {
   try {
+    console.log('[SW] Loading app manifest...');
     const response = await fetch('/app-manifest.json');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     const manifest = await response.json();
-    APP_VERSION = manifest.appVersion;
-    SHELL_FILES = manifest.shellFiles;
-    CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
-    console.log('[SW] Initialized with version:', APP_VERSION);
+    console.log('[SW] Loaded app manifest, version:', manifest.appVersion);
+    return manifest;
   } catch (error) {
-    console.error('[SW] Failed to load app manifest:', error);
-    // Fallback configuration
-    APP_VERSION = '1.0.0';
-    CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
-    SHELL_FILES = [
-      '/',
-      '/index.html',
-      '/present.html',
-      '/styles.css',
-      '/js/app-index.js',
-      '/js/app-present.js',
-      '/js/pwa.js'
-    ];
+    console.log('[SW] App manifest not available (offline mode):', error.message);
+    return null;
   }
 }
 
@@ -38,12 +26,18 @@ self.addEventListener('install', async (event) => {
 
   event.waitUntil(
     (async () => {
-      await initializeCache();
+      const manifest = await loadAppManifest();
+
+      if (!manifest) {
+        console.log('[SW] Skipping caching - offline mode');
+        return;
+      }
 
       try {
-        const cache = await caches.open(CACHE_NAME);
-        console.log('[SW] Caching shell assets:', SHELL_FILES);
-        await cache.addAll(SHELL_FILES);
+        const cacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
+        const cache = await caches.open(cacheName);
+        console.log('[SW] Caching shell assets:', manifest.shellFiles);
+        await cache.addAll(manifest.shellFiles);
         console.log('[SW] Cached shell assets successfully');
       } catch (error) {
         console.error('[SW] Failed to cache shell assets:', error);
@@ -58,12 +52,19 @@ self.addEventListener('activate', async (event) => {
 
   event.waitUntil(
     (async () => {
-      await initializeCache();
+      const manifest = await loadAppManifest();
+
+      if (!manifest) {
+        console.log('[SW] Skipping cache cleanup - offline mode');
+        // Still take control of clients
+        return self.clients.claim();
+      }
 
       // Delete old caches
+      const currentCacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
       const cacheNames = await caches.keys();
       const oldCaches = cacheNames.filter(name => 
-        name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME
+        name.startsWith(CACHE_PREFIX) && name !== currentCacheName
       );
 
       if (oldCaches.length > 0) {
@@ -93,32 +94,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Check if this is a shell file request
-  const isShellFile = isShellResource(url.pathname);
-
-  if (isShellFile) {
-      console.log('[SW] Serving shell file:', url.pathname);
-    event.respondWith(handleShellRequest(event.request));
-  }
-  // Let other requests (API, attachments) pass through normally
+  // Handle all requests with cache-first strategy (let cache determine availability)
+  event.respondWith(handleShellRequest(event.request));
 });
 
-// Check if a pathname is a shell resource
-function isShellResource(pathname) {
-  // Normalize pathname
-  if (pathname === '/') {
-    pathname = '/index.html';
-  }
-
-  return SHELL_FILES.some(shellFile => {
-    if (shellFile === '/') {
-      return pathname === '/index.html';
-    }
-    return shellFile === pathname;
-  });
-}
-
-// Handle shell file requests with cache-first strategy
+// Handle requests with cache-first strategy
 async function handleShellRequest(request) {
   const url = new URL(request.url);
   let pathname = url.pathname;
@@ -129,31 +109,40 @@ async function handleShellRequest(request) {
   }
 
   try {
-    await initializeCache();
-    const cache = await caches.open(CACHE_NAME);
+    // Try to find in any available cache first
+    let cachedResponse;
 
-    // Try cache first
-    const cachedResponse = await cache.match(request);
+    // Try to load manifest to determine if we're in online mode
+    const manifest = await loadAppManifest();
+
+    if (manifest) {
+      // Online mode: use specific cache
+      const cacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
+      const cache = await caches.open(cacheName);
+      cachedResponse = await cache.match(request);
+    } else {
+      // Offline mode: check all caches for this resource
+      cachedResponse = await caches.match(request);
+    }
+
     if (cachedResponse) {
-      console.log('[SW] Served shell from cache:', pathname);
+      console.log('[SW] Served from cache:', pathname);
       return cachedResponse;
     }
 
-    // If not in cache, fetch and cache
-    console.log('[SW] Fetching shell resource:', pathname);
+    // If not in cache, fetch from network
+    console.log('[SW] Fetching resource:', pathname);
     const response = await fetch(request);
 
     if (response.ok) {
-      const responseClone = response.clone();
-      cache.put(request, responseClone);
-      console.log('[SW] Cached shell resource:', pathname);
+      console.log('[SW] Fetched resource from network:', pathname);
     }
 
     return response;
   } catch (error) {
-    console.error('[SW] Failed to handle shell request:', pathname, error);
+    console.error('[SW] Failed to handle request:', pathname, error);
     // Return a basic error response
-    return new Response('Service Worker Error', {
+    return new Response('Resource not available', {
       status: 503,
       statusText: 'Service Unavailable'
     });
@@ -161,11 +150,12 @@ async function handleShellRequest(request) {
 }
 
 // Handle service worker messages
-self.addEventListener('message', (event) => {
+self.addEventListener('message', async (event) => {
   if (event.data && event.data.type === 'GET_VERSION') {
+    const manifest = await loadAppManifest();
     event.ports[0].postMessage({
       type: 'VERSION_RESPONSE',
-      version: APP_VERSION
+      version: manifest ? manifest.appVersion : null
     });
   }
 });
