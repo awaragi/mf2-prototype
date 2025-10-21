@@ -256,7 +256,7 @@ async function handleShellRequest(request) {
     // Return a user-friendly error response
     return new Response(`
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
         <head><title>Resource Unavailable</title></head>
         <body>
           <h1>Resource Unavailable</h1>
