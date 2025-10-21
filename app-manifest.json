@@ -1,0 +1,20 @@
+{
+  "appVersion": "1.0.0",
+  "shellFiles": [
+    "/",
+    "/index.html",
+    "/present.html",
+    "/styles.css",
+    "/js/app-index.js",
+    "/js/app-present.js",
+    "/js/pwa.js",
+    "/assets/cgi-logo.png",
+    "/favicon.ico",
+    "/assets/third-party/bootstrap.bundle.min.js",
+    "/assets/third-party/bootstrap.min.css",
+    "/assets/third-party/bootstrap.min.css.map",
+    "/assets/third-party/bootstrap-icons.css",
+    "/assets/third-party/fonts/bootstrap-icons.woff2",
+    "/assets/third-party/fonts/bootstrap-icons.woff"
+  ]
+}
