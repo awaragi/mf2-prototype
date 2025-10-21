@@ -66,6 +66,133 @@ function clearManifestCache() {
   manifestFetchTime = 0;
 }
 
+// Broadcast message to all clients
+async function broadcastToClients(message) {
+  try {
+    const clients = await self.clients.matchAll();
+    console.log('[SW] Broadcasting to', clients.length, 'clients:', message.type);
+
+    clients.forEach(client => {
+      try {
+        client.postMessage(message);
+      } catch (error) {
+        console.error('[SW] Failed to send message to client:', error);
+      }
+    });
+  } catch (error) {
+    console.error('[SW] Failed to broadcast message:', error);
+  }
+}
+
+// Centralized function to clean up old caches
+async function cleanupOldCaches(currentVersion, options = {}) {
+  const { logPrefix = '[SW]' } = options;
+
+  try {
+    const currentCacheName = `${CACHE_PREFIX}${currentVersion}`;
+    const cacheNames = await caches.keys();
+    const oldCaches = cacheNames.filter(name =>
+      name.startsWith(CACHE_PREFIX) && name !== currentCacheName
+    );
+
+    if (oldCaches.length === 0) {
+      console.log(logPrefix, 'No old caches to delete');
+      return { deleted: [], failed: [] };
+    }
+
+    console.log(logPrefix, 'Deleting old caches:', oldCaches);
+
+    const deletionResults = await Promise.allSettled(
+      oldCaches.map(async (cacheName) => {
+        try {
+          const deleted = await caches.delete(cacheName);
+          console.log(logPrefix, 'Deleted old cache:', cacheName, deleted ? 'success' : 'failed');
+          return { cacheName, deleted };
+        } catch (error) {
+          console.error(logPrefix, 'Failed to delete cache:', cacheName, error);
+          return { cacheName, deleted: false, error: error.message };
+        }
+      })
+    );
+
+    const deleted = deletionResults
+      .filter(result => result.status === 'fulfilled' && result.value.deleted)
+      .map(result => result.value.cacheName);
+
+    const failed = deletionResults
+      .filter(result => result.status === 'rejected' || !result.value.deleted)
+      .map(result => result.value?.cacheName || 'unknown');
+
+    if (failed.length > 0) {
+      console.warn(logPrefix, 'Some caches could not be deleted:', failed);
+    }
+
+    console.log(logPrefix, `Cache cleanup completed: ${deleted.length} deleted, ${failed.length} failed`);
+
+    return { deleted, failed };
+  } catch (error) {
+    console.error(logPrefix, 'Cache cleanup failed:', error);
+    return { deleted: [], failed: [], error: error.message };
+  }
+}
+
+// Centralized function to cache shell assets
+async function cacheShellAssets(manifest, options = {}) {
+  const { forceRefresh = false, logPrefix = '[SW]', cleanupOld = false } = options;
+
+  if (!manifest || !Array.isArray(manifest.shellFiles)) {
+    throw new Error('Invalid manifest or shell files not available');
+  }
+
+  const cacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
+  console.log(logPrefix, 'Opening cache:', cacheName);
+
+  const cache = await caches.open(cacheName);
+  console.log(logPrefix, 'Caching shell assets:', manifest.shellFiles);
+
+  // Cache assets with individual error handling
+  const cachePromises = manifest.shellFiles.map(async (url) => {
+    try {
+      const fetchOptions = forceRefresh ? { cache: 'no-cache' } : {};
+      const response = await fetch(url, fetchOptions);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url}: ${response.status}`);
+      }
+
+      await cache.put(url, response);
+      console.log(logPrefix, forceRefresh ? 'Updated cache for:' : 'Cached:', url);
+
+      return { url, success: true };
+    } catch (error) {
+      console.error(logPrefix, forceRefresh ? 'Failed to update cache for:' : 'Failed to cache:', url, error.message);
+      return { url, success: false, error: error.message };
+    }
+  });
+
+  const results = await Promise.allSettled(cachePromises);
+
+  // Count successful and failed operations
+  const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+  const failed = results.filter(r => r.status === 'rejected' || !r.value.success).length;
+
+  console.log(logPrefix, `Cache operation completed: ${successful} successful, ${failed} failed`);
+
+  let cleanupResult = null;
+  if (cleanupOld) {
+    cleanupResult = await cleanupOldCaches(manifest.appVersion, { logPrefix });
+  }
+
+  return {
+    cacheName,
+    successful,
+    failed,
+    total: manifest.shellFiles.length,
+    results: results.map(r => r.status === 'fulfilled' ? r.value : { success: false, error: r.reason?.message }),
+    cleanup: cleanupResult
+  };
+}
+
 // Service Worker Install Event
 self.addEventListener('install', async (event) => {
   console.log('[SW] Install event triggered');
@@ -82,31 +209,15 @@ self.addEventListener('install', async (event) => {
           return;
         }
 
-        const cacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
-        console.log('[SW] Creating cache:', cacheName);
-
-        const cache = await caches.open(cacheName);
-        console.log('[SW] Caching shell assets:', manifest.shellFiles);
-
-        // Cache assets with individual error handling
-        const cachePromises = manifest.shellFiles.map(async (url) => {
-          try {
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch ${url}: ${response.status}`);
-            }
-            await cache.put(url, response);
-            console.log('[SW] Cached:', url);
-          } catch (error) {
-            console.error('[SW] Failed to cache:', url, error.message);
-            // Don't fail the entire installation for one asset
-          }
+        // Use centralized caching function
+        const cacheResult = await cacheShellAssets(manifest, {
+          forceRefresh: false,
+          logPrefix: '[SW]'
         });
 
-        await Promise.allSettled(cachePromises);
-
         const duration = Math.round(performance.now() - startTime);
-        console.log('[SW] Install completed in', duration, 'ms');
+        console.log('[SW] Install completed in', duration, 'ms -', 
+                   `${cacheResult.successful}/${cacheResult.total} assets cached`);
 
         // Skip waiting to activate immediately
         self.skipWaiting();
@@ -134,38 +245,8 @@ self.addEventListener('activate', async (event) => {
         if (!manifest) {
           console.log('[SW] Skipping cache cleanup - offline mode');
         } else {
-          // Delete old caches
-          const currentCacheName = `${CACHE_PREFIX}${manifest.appVersion}`;
-          const cacheNames = await caches.keys();
-          const oldCaches = cacheNames.filter(name =>
-            name.startsWith(CACHE_PREFIX) && name !== currentCacheName
-          );
-
-          if (oldCaches.length > 0) {
-            console.log('[SW] Deleting old caches:', oldCaches);
-            const deletionResults = await Promise.allSettled(
-              oldCaches.map(async (cacheName) => {
-                try {
-                  const deleted = await caches.delete(cacheName);
-                  console.log('[SW] Deleted old cache:', cacheName, deleted ? 'success' : 'failed');
-                  return { cacheName, deleted };
-                } catch (error) {
-                  console.error('[SW] Failed to delete cache:', cacheName, error);
-                  return { cacheName, deleted: false, error };
-                }
-              })
-            );
-
-            const failedDeletions = deletionResults
-              .filter(result => result.status === 'rejected' || !result.value.deleted)
-              .map(result => result.value?.cacheName || 'unknown');
-
-            if (failedDeletions.length > 0) {
-              console.warn('[SW] Some caches could not be deleted:', failedDeletions);
-            }
-          } else {
-            console.log('[SW] No old caches to delete');
-          }
+          // Use centralized cleanup function
+          await cleanupOldCaches(manifest.appVersion, { logPrefix: '[SW]' });
         }
 
         const duration = Math.round(performance.now() - startTime);
@@ -318,6 +399,101 @@ self.addEventListener('message', async (event) => {
         } else {
           // Fallback for clients.postMessage
           event.source?.postMessage(response);
+        }
+        break;
+      }
+
+      case 'FORCE_MANIFEST_CHECK': {
+        console.log('[SW] Forcing manifest check...');
+        const oldVersion = cachedManifest?.appVersion;
+        const manifest = await loadAppManifest(true); // Force refresh
+
+        const response = {
+          type: 'MANIFEST_CHECK_RESPONSE',
+          oldVersion,
+          newVersion: manifest ? manifest.appVersion : null,
+          versionChanged: manifest && oldVersion !== manifest.appVersion,
+          timestamp: Date.now()
+        };
+
+        // Notify about version change
+        if (response.versionChanged) {
+          console.log('[SW] Version changed from', oldVersion, 'to', response.newVersion);
+          await broadcastToClients({
+            type: 'VERSION_CHANGED',
+            oldVersion,
+            newVersion: response.newVersion,
+            timestamp: Date.now()
+          });
+        }
+
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage(response);
+        } else {
+          event.source?.postMessage(response);
+        }
+        break;
+      }
+
+      case 'UPDATE_CACHE': {
+        console.log('[SW] Forcing cache update...');
+        const manifest = await loadAppManifest(true); // Force refresh
+
+        if (!manifest) {
+          const response = {
+            type: 'UPDATE_CACHE_RESPONSE',
+            success: false,
+            error: 'Manifest not available',
+            timestamp: Date.now()
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(response);
+          } else {
+            event.source?.postMessage(response);
+          }
+          break;
+        }
+
+        try {
+          // Use centralized caching function with force refresh and cleanup
+          const cacheResult = await cacheShellAssets(manifest, {
+            forceRefresh: true,
+            logPrefix: '[SW]',
+            cleanupOld: true
+          });
+
+          const response = {
+            type: 'UPDATE_CACHE_RESPONSE',
+            success: true,
+            version: manifest.appVersion,
+            cacheName: cacheResult.cacheName,
+            successful: cacheResult.successful,
+            failed: cacheResult.failed,
+            total: cacheResult.total,
+            cleanup: cacheResult.cleanup,
+            timestamp: Date.now()
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(response);
+          } else {
+            event.source?.postMessage(response);
+          }
+        } catch (error) {
+          console.error('[SW] Cache update failed:', error);
+          const response = {
+            type: 'UPDATE_CACHE_RESPONSE',
+            success: false,
+            error: error.message,
+            timestamp: Date.now()
+          };
+
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage(response);
+          } else {
+            event.source?.postMessage(response);
+          }
         }
         break;
       }
