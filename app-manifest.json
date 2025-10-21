@@ -2,6 +2,7 @@
   "appVersion": "1.0.0",
   "shellFiles": [
     "/",
+    "/favicon.ico",
     "/index.html",
     "/present.html",
     "/styles.css",
@@ -9,7 +10,6 @@
     "/js/app-present.js",
     "/js/pwa.js",
     "/assets/cgi-logo.png",
-    "/favicon.ico",
     "/assets/third-party/bootstrap.bundle.min.js",
     "/assets/third-party/bootstrap.min.css",
     "/assets/third-party/bootstrap.min.css.map",

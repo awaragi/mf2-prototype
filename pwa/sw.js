@@ -211,14 +211,24 @@ async function handleShellRequest(request) {
       const cacheName = `${CACHE_PREFIX}${cachedManifest.appVersion}`;
       const cache = await caches.open(cacheName);
       cachedResponse = await cache.match(request);
+
+        // If not found, try without query parameters
+        if (!cachedResponse) {
+            cachedResponse = await cache.match(new Request(pathname));
+        }
     }
 
-    // If not found, check all caches
+      // If not found, check all caches
     if (!cachedResponse) {
-      cachedResponse = await caches.match(request);
+        cachedResponse = await caches.match(request);
+
+        // If not found, try matching without query parameters
+        if (!cachedResponse) {
+            cachedResponse = await caches.match(new Request(pathname));
+        }
     }
 
-    if (cachedResponse) {
+      if (cachedResponse) {
       const duration = Math.round(performance.now() - startTime);
       console.log('[SW] Cache hit:', pathname, `(${duration}ms)`);
       return cachedResponse;
