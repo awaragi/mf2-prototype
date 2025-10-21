@@ -15,13 +15,21 @@ async function loadAppManifest(forceRefresh = false) {
 
   // Use cached version if available and not expired
   if (!forceRefresh && cachedManifest && (now - manifestFetchTime) < MANIFEST_CACHE_TTL) {
+      console.log('[SW] Using memory cached manifest version:', cachedManifest.appVersion);
     return cachedManifest;
   }
 
   try {
     console.log('[SW] Loading app manifest...');
-    const response = await fetch(APP_MANIFEST_URL, {
-      cache: 'no-cache' // Always get fresh manifest for version checks
+    // Add timestamp to ensure cache busting
+    const cacheBustUrl = `${APP_MANIFEST_URL}?t=${Date.now()}`;
+    const response = await fetch(cacheBustUrl, {
+        cache: 'no-cache', // Always get fresh manifest for version checks
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
     });
 
     if (!response.ok) {
