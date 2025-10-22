@@ -1,5 +1,5 @@
 export const APP_CACHE = {
-  "/favicon.ico": "e3b0c44",
+  "/favicon.ico": "e3b0c44x",
   "/index.html": "e3b0c44",
   "/present.html": "e3b0c44",
   "/styles.css": "e3b0c44",

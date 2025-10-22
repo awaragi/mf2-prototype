@@ -22,7 +22,19 @@
     <link rel="manifest" href="/sw/manifest.webmanifest">
 </head>
 <body class="presentations">
-    <h1 class="text-bg-info"> Available Presentations</h1>
+    <!-- Header with cache controls -->
+    <header class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+        <h1 class="text-bg-info m-0">Available Presentations</h1>
+        <div class="cache-controls d-flex align-items-center gap-3">
+            <div class="cache-status">
+                <span class="badge bg-secondary" id="cache-status">Cache: Unknown</span>
+            </div>
+            <button id="cache-toggle" class="btn btn-outline-primary btn-sm" disabled>
+                <i class="bi bi-cloud-download"></i>
+                Enable Offline
+            </button>
+        </div>
+    </header>
 
     <div class="presentations-list">
         <ul id="presentations-list">
@@ -38,5 +50,6 @@
 
     <script type="module" src="/js/app-index.js" defer></script>
     <script type="module" src="/js/pwa.js" defer></script>
+    <script type="module" src="/js/app-index-pwa.js" defer></script>
 </body>
 </html>
