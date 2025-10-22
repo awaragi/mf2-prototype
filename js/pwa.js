@@ -1,5 +1,6 @@
 // PWA Control Script
-// Handles service worker registration and PWA lifecycle
+
+const SERVICE_WORKER_SCRIPT = '/sw.js';
 
 // PWA state variables
 let isOnline = navigator.onLine;
@@ -7,55 +8,30 @@ let registration = null;
 
 // Initialize PWA functionality
 async function initPWA() {
-  console.log('[PWA] Initializing PWA Controller');
+    console.log('[PWA] Initializing PWA Controller');
+    await registerServiceWorker();
 
-  // Set up network monitoring
-  setupNetworkMonitoring();
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    try {
-      await registerServiceWorker();
-    } catch (error) {
-      console.error('[PWA] Service worker registration failed:', error);
-    }
-  } else {
-    console.log('[PWA] Service workers not supported');
-  }
 }
 
 // Register service worker
 async function registerServiceWorker() {
-  try {
-    console.log('[PWA] Registering service worker...');
+    // Register service worker
+    if (! ('serviceWorker' in navigator) ) {
+        console.log('[PWA] Service workers not supported');
+        return;
 
-    registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/'
-    });
+    }
+    try {
+      console.log('[PWA] Registering service worker...');
+      registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {scope: '/'});
 
     console.log('[PWA] SW registered with scope:', registration.scope);
 
     // Listen for service worker updates
-    registration.addEventListener('updatefound', () => {
-      console.log('[PWA] New service worker version found');
-      const newWorker = registration.installing;
-
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            console.log('[PWA] New version cached and ready');
-            // Could notify user of update here
-          } else {
-            console.log('[PWA] Service worker installed for the first time');
-          }
-        }
-      });
-    });
+    registration.addEventListener('updatefound', handleRegistrationUpdateFound);
 
     // Listen for controlling service worker changes
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('[PWA] New service worker took control');
-    });
+    navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerControllerChange);
 
     // Check for waiting service worker
     if (registration.waiting) {
@@ -74,8 +50,31 @@ async function registerServiceWorker() {
   }
 }
 
+/**
+ * Handle service worker state changes
+ * @returns {(function(*): void)|*}
+ */
+function handleServiceWorkerStateChange(event) {
+        if (event.target.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+                console.log('[PWA] New version cached and ready');
+            } else {
+                console.log('[PWA] Service worker installed for the first time');
+            }
+        }
+}
+
+function handleRegistrationUpdateFound(event) {
+        console.log('[PWA] New service worker version found');
+        registration.installing.addEventListener('statechange', handleServiceWorkerStateChange);
+}
+
+function handleServiceWorkerControllerChange(event) {
+        console.log('[PWA] New service worker took control');
+}
+
 // Set up network monitoring
-function setupNetworkMonitoring() {
+function initNetworkMonitoring() {
   // Initial network status
   console.log('[PWA] Network:', isOnline ? 'online' : 'offline');
 
@@ -150,26 +149,18 @@ function getNetworkStatus() {
   return isOnline;
 }
 
-// Get service worker registration
-function getRegistration() {
-  return registration;
-}
-
 // Initialize PWA when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPWA);
+  document.addEventListener('DOMContentLoaded', initNetworkMonitoring);
 } else {
-  initPWA();
+  initPWA().then(() => {});
+  initNetworkMonitoring();
 }
 
 // Export functions for module usage
 export {
-  initPWA,
-  registerServiceWorker,
-  setupNetworkMonitoring,
   checkForUpdates,
   getVersion,
   getNetworkStatus,
-  getRegistration,
-  onNetworkChange
 };
