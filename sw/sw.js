@@ -10,6 +10,7 @@ import {
     handleCacheDataPresentation,
     handleNukeData
 } from './handlers/command-handlers.js';
+import { initializeEngine } from './data-cache-engine.js';
 
 const logPrefix = '[SW]';
 let broadcastChannel = null;
@@ -70,6 +71,10 @@ self.addEventListener('activate', event => {
             initBroadcastChannel();
         }
         await self.clients.claim();
+
+        // Initialize data cache engine if enabled
+        await initializeEngine();
+
         logger.log(logPrefix, 'Service worker activated');
     })());
 });

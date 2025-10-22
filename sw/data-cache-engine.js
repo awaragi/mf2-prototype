@@ -34,6 +34,30 @@ function postMessage(message) {
   }
 }
 
+/**
+ * Initialize engine - load settings and start if enabled
+ * Should be called on service worker startup
+ */
+export async function initializeEngine() {
+  logger.info(logPrefix, 'Initializing engine');
+
+  try {
+    const settings = await getSettings();
+    if (settings.engineEnabled) {
+      logger.info(logPrefix, 'Engine enabled in settings, starting engine');
+      await startEngine(true); // Resume mode
+    } else {
+      logger.info(logPrefix, 'Engine disabled in settings');
+      engineState = 'off';
+      emitStatus();
+    }
+  } catch (error) {
+    logger.error(logPrefix, 'Engine initialization failed:', error);
+    engineState = 'off';
+    emitStatus();
+  }
+}
+
 export async function startEngine(resume = false) {
   logger.info(logPrefix, `start (resume=${resume})`);
 
