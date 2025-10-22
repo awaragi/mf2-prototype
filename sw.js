@@ -2,4 +2,4 @@
 // This allows the service worker to control the entire application scope
 
 // Import the main service worker logic
-import '/pwa/sw.js';
+import '/sw/sw.js';

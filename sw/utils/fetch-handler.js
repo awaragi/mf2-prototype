@@ -25,7 +25,9 @@ export async function handleAppCacheRequest(request) {
     let cachedResponse;
 
     // First try current app cache if we have manifest
-    if (getAppCacheName(getCachedManifest().version)) {
+    let manifest = getCachedManifest();
+    if (manifest) {
+      const cacheName = getAppCacheName(manifest.version)
       const cache = await caches.open(cacheName);
       cachedResponse = await cache.match(request);
 
