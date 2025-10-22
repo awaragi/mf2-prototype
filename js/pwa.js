@@ -131,22 +131,66 @@ function onNetworkChange(status) {
 
 /**
  * Check for service worker updates manually
- * @returns {Promise<ServiceWorkerRegistration|undefined>}
+ * @returns {Promise<{
+ *  success: boolean,
+ *  oldVersion?: string,
+ *  newVersion?: string,
+ *  versionChanged: boolean,
+ *  timestamp?: number,
+ *  error?: string
+ * }>} Update check result
  */
 async function checkForUpdates() {
-  if (!registration) {
-    console.log('[PWA] No service worker registration found');
-    return;
+  if (!navigator.serviceWorker.controller) {
+    console.warn('[PWA] No service worker controller available');
+    return { 
+      success: false, 
+      error: 'Service worker not available',
+      versionChanged: false 
+    };
   }
 
-  try {
+  return new Promise((resolve) => {
+    const messageChannel = new MessageChannel();
+
+    // Set up timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      resolve({
+        success: false,
+        error: 'Timeout waiting for update check response',
+        versionChanged: false
+      });
+    }, 10000); // 10 second timeout
+
+    messageChannel.port1.onmessage = (event) => {
+      clearTimeout(timeout);
+
+      if (event.data.type === 'MANIFEST_CHECK_RESPONSE') {
+        console.log('[PWA] Update check response:', event.data);
+
+        resolve({
+          success: true,
+          oldVersion: event.data.oldVersion,
+          newVersion: event.data.newVersion,
+          versionChanged: event.data.versionChanged,
+          timestamp: event.data.timestamp
+        });
+      } else {
+        resolve({
+          success: false,
+          error: 'Unexpected response type: ' + event.data.type,
+          versionChanged: false
+        });
+      }
+    };
+
+    // Send message to service worker
     console.log('[PWA] Checking for updates...');
-    const updatedRegistration = await registration.update();
-    console.log('[PWA] Update check completed');
-    return updatedRegistration;
-  } catch (error) {
-    console.error('[PWA] Update check failed:', error);
-  }
+    navigator.serviceWorker.controller.postMessage(
+      { type: 'FORCE_MANIFEST_CHECK' },
+      [messageChannel.port2]
+    );
+  });
 }
 
 /**
