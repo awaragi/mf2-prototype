@@ -23,11 +23,14 @@ Establish a working mock environment mirroring production data flows with zero P
   /index.html
   /present.html
   /styles.css
-  /js/app-present.js
+  /js/app-index.js     ← handles presentation list
+  /js/app-present.js   ← handles slide presentation
+  /js-common/utils/logging.js  ← shared logging utility
   /api/slides.json     ← mock presentations list
   /attachments/...     ← mock images and binaries
+  /assets/             ← static assets (logos, icons, bootstrap)
   ```
-- Ensure `present.html?id=<id>` loads the correct presentation from `/api/slides.json` and displays attachments.
+- Ensure `present.html?d=<id>` loads the correct presentation from `/api/slides.json` and displays attachments.
 - No Service Worker yet. No caching.
 
 ### 🧪 Validation (Reviewer)
@@ -44,25 +47,28 @@ Make the app installable and resilient offline for the **shell only** (HTML/CSS/
 
 ### 📋 Implementation Directives (Agent)
 - Create:
-  - `/pwa/sw.js` (shell installer/activator/fetch for shell assets only)
-  - `/pwa/manifest.webmanifest` (install metadata)
-  - `/app-manifest.json` (lists `{ appVersion, shell[] }`)
+  - `/sw/sw.js` (shell installer/activator/fetch for shell assets only)
+  - `/sw/manifest.webmanifest` (install metadata)
+  - `/app-manifest.js` (exports `APP_CACHE` object with hash-based cache keys)
   - `/js/pwa.js` (centralized app-side PWA manager: registration + status logs)
-- `/pwa/sw.js` must:
-  - **install**: fetch `/app-manifest.json`, open cache `shell-<appVersion>`, `addAll(shell[])`, log `[SW] install …`.
-  - **activate**: delete old `shell-*` caches, `clients.claim()`, log `[SW] activate …`.
-  - **fetch**: for shell URLs only (`index.html`, `present.html`, `styles.css`, `/js/*`, `/pwa/manifest.webmanifest`) respond from newest `shell-<appVersion>`; log `[SW] fetch(shell): cache hit|miss`.
-- `/js/pwa.js` must register the SW on `window.load` and log:
-  - `[PWA] SW registered …`
-  - `[PWA] SW update found …` when `updatefound` fires
-  - `[PWA] New version cached. Prompt user to reload.` when `installed && controller`
+  - `/sw/utils/app-cache-manager.js` (cache management utilities)
+  - `/sw/utils/app-fetch-handler.js` (app cache-first fetch strategy)
+- `/sw/sw.js` must:
+  - **install**: call `initCache()`, `skipWaiting()`, log `[SW] Installing service worker` and `[SW] Service worker installed`.
+  - **activate**: call `cleanupOldAppCaches()`, `clients.claim()`, log `[SW] Activating service worker` and `[SW] Service worker activated`.
+  - **fetch**: delegate to `handleAppCacheRequest(event)` which implements cache-first strategy with fallback; log `[SW] Fetching:` for each request.
+- `/js/pwa.js` must register the SW on `DOMContentLoaded` and log:
+  - `[PWA] SW registered with scope: …`
+  - Handle `controllerchange` events and log controller status
+  - Include helper functions like `getAppVersion()`
+- Cache naming uses hash-based approach: `app-assets-<hash>` where hash is generated from `APP_CACHE` object
 - **No inline JS** in HTML. Keep `<script type="module" src="/js/app-present.js" defer></script>` and `<script type="module" src="/js/pwa.js" defer></script>` only.
 
 ### 🧪 Validation (Reviewer)
-1. First load: Console shows `[SW] install`, `[SW] activate`, `[PWA] SW registered`.
-2. Reload: Shell assets served from cache (`Application → Cache Storage → shell-<version>`).
-3. Offline: Pages load (shell only); content endpoints fail (expected).
-4. Bump `appVersion`: Logs show new cache created and old deleted; on reload controller switches.
+1. First load: Console shows `[SW] Installing service worker`, `[SW] Service worker installed`, `[SW] Service worker activated`, `[PWA] SW registered with scope:`.
+2. Reload: Shell assets served from cache (`Application → Cache Storage → app-assets-<hash>`).
+3. Offline: Pages load (shell only); content endpoints fail (expected).  
+4. Change `APP_CACHE` content: New hash generated, old cache cleaned up on activate.
 
 ---
 
@@ -79,8 +85,11 @@ Enable structured **app ↔ SW** communication to request status and toggle cach
   - Open `BroadcastChannel('pwa-events')` and wire send/receive helpers.
   - Send commands on UI toggle (or dev-only button) and log `[PWA] User requested: <CMD>`.
   - Log **all** incoming events: `[PWA EVT] <TYPE> …`.
-- `/pwa/sw.js`:
-  - Central `message` listener: log `[SW] CMD: <type>`; respond with `STATUS {state:"off"}` until Engine exists.
+  - **Clean up existing `getAppVersion()` MessageChannel code** - replace with BroadcastChannel approach.
+- `/sw/sw.js`:
+  - Add central `message` listener: log `[SW] CMD: <type>`; respond with `STATUS {state:"off"}` until Engine exists.
+  - **Keep existing install/activate/fetch handlers** but add messaging capability.
+- **Preserve existing cache management utilities** (`/sw/utils/`) but prepare them for Engine integration in later stages.
 
 ### 🧪 Validation (Reviewer)
 - Toggling “Enable Offline” logs `[PWA] User requested: ACTIVATE_CACHING` then `[SW] CMD: ACTIVATE_CACHING` then `STATUS` echo.
