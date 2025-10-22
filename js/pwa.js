@@ -29,7 +29,7 @@ async function registerServiceWorker() {
     }
     try {
       console.log('[PWA] Registering service worker...');
-      registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {scope: '/'});
+      registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {type: 'module', scope: '/'});
 
     console.log('[PWA] SW registered with scope:', registration.scope);
 
