@@ -1,5 +1,8 @@
 import '../assets/thirdparty/dexie.js';
 import { DB_NAME, DB_VERSION, STORES, META_KEYS, DEFAULT_SETTINGS, ASSET_DEFAULTS } from './constants.js';
+import {logger} from '../js-common/utils/logging.js';
+
+const logPrefix = '[DB]';
 
 const { Dexie } = self;
 
@@ -37,19 +40,19 @@ export async function openDB() {
   try {
     dbInstance = new CacheDB();
     await dbInstance.open();
-    console.log(`[DB] opened version ${DB_VERSION}`);
+      logger.info(logPrefix, `opened version ${DB_VERSION}`);
 
-    // Initialize default settings if not exists
+      // Initialize default settings if not exists
     const existing = await dbInstance.meta.get(META_KEYS.SETTINGS);
     if (!existing) {
       await dbInstance.meta.put({ key: META_KEYS.SETTINGS, ...DEFAULT_SETTINGS });
-      console.log('[DB] initialized default settings');
+        logger.info(logPrefix, 'initialized default settings');
     }
 
     return dbInstance;
   } catch (error) {
-    console.error('[DB] failed to open:', error);
-    throw error;
+      logger.error(logPrefix, 'failed to open:', error);
+      throw error;
   }
 }
 
@@ -77,10 +80,10 @@ export async function putAsset(url, data, type = ASSET_DEFAULTS.DEFAULT_TYPE, ex
     };
 
     await db.assets.put(asset);
-    console.log(`[DB] putAsset → ${url}`);
+      logger.info(logPrefix, `putAsset → ${url}`);
   } catch (error) {
-    console.error(`[DB] putAsset failed for ${url}:`, error);
-    throw error;
+      logger.error(logPrefix, `putAsset failed for ${url}:`, error);
+      throw error;
   }
 }
 
@@ -95,15 +98,15 @@ export async function getAsset(url) {
     const asset = await db.assets.get(url);
 
     if (asset) {
-      console.log(`[DB] getAsset → ${url}`);
-      return asset;
+        logger.info(logPrefix, `getAsset → ${url}`);
+        return asset;
     } else {
-      console.log(`[DB] getAsset → ${url} (not found)`);
-      return null;
+        logger.info(logPrefix, `getAsset → ${url} (not found)`);
+        return null;
     }
   } catch (error) {
-    console.error(`[DB] getAsset failed for ${url}:`, error);
-    return null;
+      logger.error(logPrefix, `getAsset failed for ${url}:`, error);
+      return null;
   }
 }
 
@@ -119,10 +122,10 @@ export async function deleteAsset(url) {
       await db.assets.delete(url);
       await db.assetsIndex.where('url').equals(url).delete();
     });
-    console.log(`[DB] deleteAsset → ${url}`);
+      logger.info(logPrefix, `deleteAsset → ${url}`);
   } catch (error) {
-    console.error(`[DB] deleteAsset failed for ${url}:`, error);
-    throw error;
+      logger.error(logPrefix, `deleteAsset failed for ${url}:`, error);
+      throw error;
   }
 }
 
@@ -158,10 +161,10 @@ export async function creditUrl(presentationId, url) {
       }
     });
 
-    console.log(`[DB] creditUrl → ${presentationId} ${url}`);
+      logger.info(logPrefix, `creditUrl → ${presentationId} ${url}`);
   } catch (error) {
-    console.error(`[DB] creditUrl failed for ${presentationId} ${url}:`, error);
-    throw error;
+      logger.error(logPrefix, `creditUrl failed for ${presentationId} ${url}:`, error);
+      throw error;
   }
 }
 
@@ -176,8 +179,8 @@ export async function getProgress(presentationId) {
     const progress = await db.progress.get(presentationId);
     return progress || null;
   } catch (error) {
-    console.error(`[DB] getProgress failed for ${presentationId}:`, error);
-    return null;
+      logger.error(logPrefix, `getProgress failed for ${presentationId}:`, error);
+      return null;
   }
 }
 
@@ -198,10 +201,10 @@ export async function setProgress(presentationId, progressObj) {
     };
 
     await db.progress.put(progress);
-    console.log(`[DB] setProgress → ${presentationId} (${progress.credited}/${progress.expected})`);
+      logger.info(logPrefix, `setProgress → ${presentationId} (${progress.credited}/${progress.expected})`);
   } catch (error) {
-    console.error(`[DB] setProgress failed for ${presentationId}:`, error);
-    throw error;
+      logger.error(logPrefix, `setProgress failed for ${presentationId}:`, error);
+      throw error;
   }
 }
 
@@ -214,10 +217,10 @@ export async function markPresentationComplete(presentationId) {
   try {
     const db = await openDB();
     await db.progress.update(presentationId, { complete: true });
-    console.log(`[DB] markPresentationComplete → ${presentationId}`);
+      logger.info(logPrefix, `markPresentationComplete → ${presentationId}`);
   } catch (error) {
-    console.error(`[DB] markPresentationComplete failed for ${presentationId}:`, error);
-    throw error;
+      logger.error(logPrefix, `markPresentationComplete failed for ${presentationId}:`, error);
+      throw error;
   }
 }
 
@@ -231,8 +234,8 @@ export async function getSettings() {
     const settings = await db.meta.get(META_KEYS.SETTINGS);
     return settings ? { ...settings } : { ...DEFAULT_SETTINGS };
   } catch (error) {
-    console.error('[DB] getSettings failed:', error);
-    return { ...DEFAULT_SETTINGS };
+      logger.error(logPrefix, 'getSettings failed:', error);
+      return { ...DEFAULT_SETTINGS };
   }
 }
 
@@ -248,10 +251,10 @@ export async function setSettings(settingsObj) {
     const updated = { key: META_KEYS.SETTINGS, ...current, ...settingsObj };
 
     await db.meta.put(updated);
-    console.log('[DB] setSettings →', Object.keys(settingsObj));
+      logger.info(logPrefix, 'setSettings →', Object.keys(settingsObj));
   } catch (error) {
-    console.error('[DB] setSettings failed:', error);
-    throw error;
+      logger.error(logPrefix, 'setSettings failed:', error);
+      throw error;
   }
 }
 
@@ -272,10 +275,10 @@ export async function clearAll() {
       await db.meta.put({ key: META_KEYS.SETTINGS, ...DEFAULT_SETTINGS });
     });
 
-    console.log('[DB] clearAll → complete');
+      logger.info(logPrefix, 'clearAll → complete');
   } catch (error) {
-    console.error('[DB] clearAll failed:', error);
-    throw error;
+      logger.error(logPrefix, 'clearAll failed:', error);
+      throw error;
   }
 }
 
@@ -294,8 +297,8 @@ export async function getExpiredAssets(now = Date.now()) {
 
     return expired.map(asset => asset.url);
   } catch (error) {
-    console.error('[DB] getExpiredAssets failed:', error);
-    return [];
+      logger.error(logPrefix, 'getExpiredAssets failed:', error);
+      return [];
   }
 }
 
@@ -314,10 +317,10 @@ export async function deleteAssets(urls) {
       await db.assetsIndex.where('url').anyOf(urls).delete();
     });
 
-    console.log(`[DB] deleteAssets → ${urls.length} assets`);
+      logger.info(logPrefix, `deleteAssets → ${urls.length} assets`);
   } catch (error) {
-    console.error('[DB] deleteAssets failed:', error);
-    throw error;
+      logger.error(logPrefix, 'deleteAssets failed:', error);
+      throw error;
   }
 }
 
@@ -330,9 +333,9 @@ export async function markPresentationIncomplete(presentationId) {
   try {
     const db = await openDB();
     await db.progress.update(presentationId, { complete: false });
-    console.log(`[DB] markPresentationIncomplete → ${presentationId}`);
+      logger.info(logPrefix, `markPresentationIncomplete → ${presentationId}`);
   } catch (error) {
-    console.error(`[DB] markPresentationIncomplete failed for ${presentationId}:`, error);
-    throw error;
+      logger.error(logPrefix, `markPresentationIncomplete failed for ${presentationId}:`, error);
+      throw error;
   }
 }

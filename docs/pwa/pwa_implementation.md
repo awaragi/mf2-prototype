@@ -136,7 +136,7 @@ Ensure all cached assets are **encrypted** before storing in IndexedDB.
   - Use **AES-GCM-256** with random 12-byte IV per asset.
   - Implement `encrypt(plainBytes, keyVersion)` and `decrypt({iv, ct, type, keyVersion})`.
   - Logs: `[CRYPTO] WebCrypto OK`, `[CRYPTO] Encrypt → <bytes>`, `[CRYPTO] Decrypt → <type>`.
-- `/pwa/constants.js`: export `KEY_VERSION=1` and any crypto constants.
+- `/sw/constants.js`: export `KEY_VERSION=1` and any crypto constants.
 - Update `cache-db.js`:
   - `putAsset` must store **ciphertext** `{iv, ct, type, keyVersion}`.
   - `getAsset` must **decrypt** before returning a Blob/ArrayBuffer.
