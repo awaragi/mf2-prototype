@@ -1,8 +1,9 @@
 // PWA Control Script
-import { logger } from '../js-common/utils/logging.js';
+import {logger} from '../js-common/utils/logging.js';
 import {initNetworkMonitoring} from "./utils/network-monitor.js";
 
 const SERVICE_WORKER_SCRIPT = '/sw.js';
+const logPrefix = '[PWA]';
 
 // PWA state variables
 let registration = null;
@@ -12,7 +13,7 @@ let registration = null;
  * @returns {Promise<void>}
  */
 async function initPWA() {
-    logger.debug('[PWA] Initializing PWA Controller');
+    logger.debug(logPrefix, 'Initializing PWA Controller');
     await registerServiceWorker();
 
 }
@@ -23,36 +24,32 @@ async function initPWA() {
  */
 async function registerServiceWorker() {
     // Register service worker
-    if (! ('serviceWorker' in navigator) ) {
-        logger.warn('[PWA] Service workers not supported');
+    if (!('serviceWorker' in navigator)) {
+        logger.warn(logPrefix, 'Service workers not supported');
         return;
 
     }
     try {
-      registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {type: 'module', scope: '/'});
-      logger.log('[PWA] SW registered with scope:', registration.scope);
+        registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {type: 'module', scope: '/'});
+        logger.log(logPrefix, 'SW registered with scope:', registration.scope);
 
-    // Check if service worker is controlling the page
-    if (navigator.serviceWorker.controller) {
-      logger.debug('[PWA] Page is controlled by service worker');
-    } else {
-      logger.debug('[PWA] Page is not controlled by service worker');
+        handleServiceWorkerControllerChange();
+
+        // Add this after service worker registration
+        navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerControllerChange);
+    } catch (error) {
+        logger.error(logPrefix, 'Service worker registration failed:', error);
     }
-
-  } catch (error) {
-    logger.error('[PWA] Service worker registration failed:', error);
-  }
 }
 
 /**
  * Handle when a new service worker takes control
- * @param {Event} event - The controller change event
  */
-function handleServiceWorkerControllerChange(event) {
+function handleServiceWorkerControllerChange() {
     if (navigator.serviceWorker.controller) {
-        logger.log('[PWA] New service worker took control', navigator.serviceWorker.controller.scriptURL);
+        logger.log(logPrefix, 'Service worker took control', navigator.serviceWorker.controller.scriptURL);
     } else {
-        logger.log('[PWA] Service worker control lost');
+        logger.warn(logPrefix, 'Service worker control lost');
     }
 }
 
@@ -61,44 +58,36 @@ function handleServiceWorkerControllerChange(event) {
  * @returns {Promise<string|null>}
  */
 async function getAppVersion() {
-  if (!navigator.serviceWorker.controller) {
-    return null;
-  }
+    if (!navigator.serviceWorker.controller) {
+        return null;
+    }
 
-  return new Promise((resolve) => {
-    const messageChannel = new MessageChannel();
-    messageChannel.port1.onmessage = (event) => {
-      if (event.data.type === 'APP_VERSION_RESPONSE') {
-        resolve(event.data.version);
-      }
-    };
+    return new Promise((resolve) => {
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (event) => {
+            if (event.data.type === 'APP_VERSION_RESPONSE') {
+                resolve(event.data.version);
+            }
+        };
 
-    navigator.serviceWorker.controller.postMessage(
-      { type: 'GET_APP_VERSION' },
-      [messageChannel.port2]
-    );
-  });
-}
-
-/**
- * Get current network status
- * @returns {boolean}
- */
-function getNetworkStatus() {
-  return isOnline;
+        navigator.serviceWorker.controller.postMessage(
+            {type: 'GET_APP_VERSION'},
+            [messageChannel.port2]
+        );
+    });
 }
 
 // Initialize PWA when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPWA);
-  document.addEventListener('DOMContentLoaded', initNetworkMonitoring);
+    document.addEventListener('DOMContentLoaded', initPWA);
+    document.addEventListener('DOMContentLoaded', initNetworkMonitoring);
 } else {
-  initPWA().then(() => {});
-  initNetworkMonitoring();
+    initPWA().then(() => {
+    });
+    initNetworkMonitoring();
 }
 
 // Export functions for module usage
 export {
-  getAppVersion,
-  getNetworkStatus,
+    getAppVersion
 };
