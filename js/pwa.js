@@ -84,7 +84,11 @@ function handleRegistrationUpdateFound(event) {
  * @param {Event} event - The controller change event
  */
 function handleServiceWorkerControllerChange(event) {
-        console.log('[PWA] New service worker took control');
+    if (navigator.serviceWorker.controller) {
+        console.log('[PWA] New service worker took control', navigator.serviceWorker.controller.scriptURL);
+    } else {
+        console.log('[PWA] Service worker control lost');
+    }
 }
 
 /**
@@ -225,6 +229,96 @@ function getNetworkStatus() {
   return isOnline;
 }
 
+/**
+ * Schedule an update check to run as soon as the service worker takes control
+ * @returns {Promise<{success: boolean, oldVersion?: string, newVersion?: string, versionChanged: boolean, timestamp?: number, error?: string}>}
+ */
+async function scheduleCheckForUpdate() {
+  console.log('[PWA] Scheduling update check...');
+
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[PWA] Service workers not supported');
+    return { success: false, error: 'Service workers not supported', versionChanged: false };
+  }
+
+  // Check for controller up to 10 times with 1 second intervals
+  for (let i = 0; i < 10; i++) {
+    if (navigator.serviceWorker.controller) {
+      console.log('[PWA] Service worker is ready, checking for updates');
+
+      try {
+        const updateInformation = await checkForUpdates();
+        console.log('[PWA] Update Information', updateInformation);
+        return updateInformation;
+      } catch (error) {
+        console.error('[PWA] Error in scheduled update check:', error);
+        return { success: false, error: error.message, versionChanged: false };
+      }
+    }
+
+    // Wait 1 second before next attempt
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  console.warn('[PWA] Service worker controller not available after 10 attempts');
+  return { success: false, error: 'Service worker controller not available after 10 attempts', versionChanged: false };
+}
+
+/**
+ * Send message to service worker to update cache
+ * @returns {Promise<{
+ *   success: boolean,
+ *   error?: string,
+ *   updated: boolean,
+ *   timestamp?: number
+ * }>}
+ */
+async function updateCache() {
+    if (!navigator.serviceWorker.controller) {
+        console.warn('[PWA] No service worker controller available');
+        return {
+            success: false,
+            error: 'Service worker not available',
+            updated: false
+        };
+    }
+
+    return new Promise((resolve) => {
+        const messageChannel = new MessageChannel();
+
+        // Set up timeout to prevent hanging
+        const timeout = setTimeout(() => {
+            resolve({
+                success: false,
+                error: 'Timeout waiting for cache update response',
+                updated: false
+            });
+        }, 30000); // 30 second timeout
+
+        messageChannel.port1.onmessage = (event) => {
+            clearTimeout(timeout);
+            if (event.data.type === 'UPDATE_CACHE_RESPONSE') {
+                resolve({
+                    success: true,
+                    updated: event.data.updated,
+                    timestamp: event.data.timestamp
+                });
+            } else {
+                resolve({
+                    success: false,
+                    error: 'Unexpected response type: ' + event.data.type,
+                    updated: false
+                });
+            }
+        };
+
+        navigator.serviceWorker.controller.postMessage(
+            {type: 'UPDATE_CACHE'},
+            [messageChannel.port2]
+        );
+    });
+}
+
 // Initialize PWA when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPWA);
@@ -239,4 +333,6 @@ export {
   checkForUpdates,
   getVersion,
   getNetworkStatus,
+  scheduleCheckForUpdate,
+  updateCache,
 };
