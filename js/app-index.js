@@ -8,10 +8,10 @@ async function loadPresentations() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const slidesData = await response.json();
-        console.log('Slides loaded successfully', slidesData);
+        console.log('[INDEX] Slides loaded successfully', slidesData);
         return slidesData;
     } catch (error) {
-        console.error('Error loading presentations:', error);
+        console.error('[INDEX] Error loading presentations:', error);
         return null;
     }
 }
@@ -46,7 +46,7 @@ async function generatePresentationsList() {
     // Replace placeholder with actual content
     listElement.innerHTML = createPresentationHTML(presentations);
 
-    console.log(`Loaded ${presentations.length} presentations`);
+    console.log(`[INDEX] Loaded ${presentations.length} presentations`);
 }
 
 // Initialize when DOM is ready
