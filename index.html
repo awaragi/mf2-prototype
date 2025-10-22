@@ -36,22 +36,22 @@
     <script type="module" src="/js/app-index.js" defer></script>
     <script type="module" src="/js/pwa.js" defer></script>
 <script type="module">
-    import { getNetworkStatus, checkForUpdates, scheduleCheckForUpdate, updateCache } from '/js/pwa.js';
+    import { getNetworkStatus, checkForAppUpdates, scheduleCheckForAppUpdate, updateAppCache } from '/js/pwa.js';
     window.getNetworkStatus = getNetworkStatus;
-    window.checkForUpdates = checkForUpdates;
-    window.updateCache = updateCache;
+    window.checkForAppUpdates = checkForAppUpdates;
+    window.updateAppCache = updateAppCache;
 
     console.log('[INDEX] Online Status', window.getNetworkStatus() );
     console.log('[INDEX] Scheduling update check');
 
     // Schedule update check to run when service worker is ready
-    scheduleCheckForUpdate().then(async (updateInformation) => {
+    scheduleCheckForAppUpdate().then(async (updateInformation) => {
         if(updateInformation && updateInformation.versionChanged) {
             console.log('[INDEX] New version available', updateInformation.oldVersion, '->', updateInformation.newVersion);
             const confirmUpdate = confirm('A new version of this presentation is available. Do you want to update?');
             if(confirmUpdate) {
                 console.log('[INDEX] User confirmed update, refreshing...');
-                await updateCache();
+                await updateAppCache();
                 console.log('[INDEX] App cache refreshed, reloading');
                 window.location.reload();
             } else {

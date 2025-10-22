@@ -1,6 +1,6 @@
 {
-  "appVersion": "1.0.0",
-  "shellFiles": [
+  "version": "1.0.3",
+  "files": [
     "/",
     "/favicon.ico",
     "/index.html",

@@ -134,7 +134,7 @@ function onNetworkChange(status) {
 }
 
 /**
- * Check for service worker updates manually
+ * Check for app cache updates manually
  * @returns {Promise<{
  *  success: boolean,
  *  oldVersion?: string,
@@ -142,14 +142,14 @@ function onNetworkChange(status) {
  *  versionChanged: boolean,
  *  timestamp?: number,
  *  error?: string
- * }>} Update check result
+ * }>} App cache update check result
  */
-async function checkForUpdates() {
+async function checkForAppUpdates() {
   if (!navigator.serviceWorker.controller) {
-    console.warn('[PWA] No service worker controller available');
+    console.warn('[PWA] No service worker controller available for app cache check');
     return { 
       success: false, 
-      error: 'Service worker not available',
+      error: 'Service worker not available for app cache check',
       versionChanged: false 
     };
   }
@@ -161,7 +161,7 @@ async function checkForUpdates() {
     const timeout = setTimeout(() => {
       resolve({
         success: false,
-        error: 'Timeout waiting for update check response',
+        error: 'Timeout waiting for app cache update check response',
         versionChanged: false
       });
     }, 10000); // 10 second timeout
@@ -169,8 +169,8 @@ async function checkForUpdates() {
     messageChannel.port1.onmessage = (event) => {
       clearTimeout(timeout);
 
-      if (event.data.type === 'MANIFEST_CHECK_RESPONSE') {
-        console.log('[PWA] Update check response:', event.data);
+      if (event.data.type === 'APP_MANIFEST_CHECK_RESPONSE') {
+        console.log('[PWA] App cache update check response:', event.data);
 
         resolve({
           success: true,
@@ -189,19 +189,19 @@ async function checkForUpdates() {
     };
 
     // Send message to service worker
-    console.log('[PWA] Checking for updates...');
+    console.log('[PWA] Checking for app cache updates...');
     navigator.serviceWorker.controller.postMessage(
-      { type: 'FORCE_MANIFEST_CHECK' },
+      { type: 'FORCE_APP_MANIFEST_CHECK' },
       [messageChannel.port2]
     );
   });
 }
 
 /**
- * Get current app version from service worker
+ * Get current app cache version from service worker
  * @returns {Promise<string|null>}
  */
-async function getVersion() {
+async function getAppVersion() {
   if (!navigator.serviceWorker.controller) {
     return null;
   }
@@ -209,13 +209,13 @@ async function getVersion() {
   return new Promise((resolve) => {
     const messageChannel = new MessageChannel();
     messageChannel.port1.onmessage = (event) => {
-      if (event.data.type === 'VERSION_RESPONSE') {
+      if (event.data.type === 'APP_VERSION_RESPONSE') {
         resolve(event.data.version);
       }
     };
 
     navigator.serviceWorker.controller.postMessage(
-      { type: 'GET_VERSION' },
+      { type: 'GET_APP_VERSION' },
       [messageChannel.port2]
     );
   });
@@ -230,28 +230,28 @@ function getNetworkStatus() {
 }
 
 /**
- * Schedule an update check to run as soon as the service worker takes control
+ * Schedule an app cache update check to run as soon as the service worker takes control
  * @returns {Promise<{success: boolean, oldVersion?: string, newVersion?: string, versionChanged: boolean, timestamp?: number, error?: string}>}
  */
-async function scheduleCheckForUpdate() {
-  console.log('[PWA] Scheduling update check...');
+async function scheduleCheckForAppUpdate() {
+  console.log('[PWA] Scheduling app cache update check...');
 
   if (!('serviceWorker' in navigator)) {
-    console.warn('[PWA] Service workers not supported');
-    return { success: false, error: 'Service workers not supported', versionChanged: false };
+    console.warn('[PWA] Service workers not supported for app cache updates');
+    return { success: false, error: 'Service workers not supported for app cache updates', versionChanged: false };
   }
 
   // Check for controller up to 10 times with 1 second intervals
   for (let i = 0; i < 10; i++) {
     if (navigator.serviceWorker.controller) {
-      console.log('[PWA] Service worker is ready, checking for updates');
+      console.log('[PWA] Service worker is ready, checking for app cache updates');
 
       try {
-        const updateInformation = await checkForUpdates();
-        console.log('[PWA] Update Information', updateInformation);
+        const updateInformation = await checkForAppUpdates();
+        console.log('[PWA] App Cache Update Information', updateInformation);
         return updateInformation;
       } catch (error) {
-        console.error('[PWA] Error in scheduled update check:', error);
+        console.error('[PWA] Error in scheduled app cache update check:', error);
         return { success: false, error: error.message, versionChanged: false };
       }
     }
@@ -260,12 +260,12 @@ async function scheduleCheckForUpdate() {
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  console.warn('[PWA] Service worker controller not available after 10 attempts');
-  return { success: false, error: 'Service worker controller not available after 10 attempts', versionChanged: false };
+  console.warn('[PWA] Service worker controller not available for app cache updates after 10 attempts');
+  return { success: false, error: 'Service worker controller not available for app cache updates after 10 attempts', versionChanged: false };
 }
 
 /**
- * Send message to service worker to update cache
+ * Send message to service worker to update app cache
  * @returns {Promise<{
  *   success: boolean,
  *   error?: string,
@@ -273,12 +273,12 @@ async function scheduleCheckForUpdate() {
  *   timestamp?: number
  * }>}
  */
-async function updateCache() {
+async function updateAppCache() {
     if (!navigator.serviceWorker.controller) {
-        console.warn('[PWA] No service worker controller available');
+        console.warn('[PWA] No service worker controller available for app cache update');
         return {
             success: false,
-            error: 'Service worker not available',
+            error: 'Service worker not available for app cache update',
             updated: false
         };
     }
@@ -290,14 +290,14 @@ async function updateCache() {
         const timeout = setTimeout(() => {
             resolve({
                 success: false,
-                error: 'Timeout waiting for cache update response',
+                error: 'Timeout waiting for app cache update response',
                 updated: false
             });
         }, 30000); // 30 second timeout
 
         messageChannel.port1.onmessage = (event) => {
             clearTimeout(timeout);
-            if (event.data.type === 'UPDATE_CACHE_RESPONSE') {
+            if (event.data.type === 'UPDATE_APP_CACHE_RESPONSE') {
                 resolve({
                     success: true,
                     updated: event.data.updated,
@@ -313,7 +313,7 @@ async function updateCache() {
         };
 
         navigator.serviceWorker.controller.postMessage(
-            {type: 'UPDATE_CACHE'},
+            {type: 'UPDATE_APP_CACHE'},
             [messageChannel.port2]
         );
     });
@@ -330,9 +330,9 @@ if (document.readyState === 'loading') {
 
 // Export functions for module usage
 export {
-  checkForUpdates,
-  getVersion,
+  checkForAppUpdates,
+  getAppVersion,
   getNetworkStatus,
-  scheduleCheckForUpdate,
-  updateCache,
+  scheduleCheckForAppUpdate,
+  updateAppCache,
 };
