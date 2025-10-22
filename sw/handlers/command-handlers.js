@@ -1,17 +1,19 @@
 import {logger} from '../../js-common/utils/logging.js';
 import {EVENTS} from '../../js-common/events.js';
+import { getEngineEnabled } from '../data-cache-settings.js';
 
 const logPrefix = '[SW-HANDLER]';
 
 /**
  * Get current status for both app and data caching
- * @returns {Object} Status object
+ * @returns {Promise<Object>} Status object
  */
-export function getCurrentStatus() {
+export async function getCurrentStatus() {
+    const engineEnabled = await getEngineEnabled();
     return {
         app: { state: 'active' }, // App caching is always active when SW is running
         data: { 
-            state: 'off', // Engine will be implemented in later stages
+            state: engineEnabled ? 'active' : 'off',
             progress: {
                 overall: 0,
                 presentations: {}
@@ -42,10 +44,16 @@ function sendEvent(broadcastChannel, eventType, payload = {}) {
  * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleActivateDataCaching(broadcastChannel, payload) {
+export async function handleActivateDataCaching(broadcastChannel, payload) {
     logger.debug(logPrefix, 'Activate data caching requested');
-    // Engine will be implemented in later stages
-    sendEvent(broadcastChannel, EVENTS.STATUS, getCurrentStatus());
+    try {
+        const { enableEngine } = await import('../data-cache-settings.js');
+        await enableEngine();
+        const status = await getCurrentStatus();
+        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+    } catch (error) {
+        logger.error(logPrefix, 'Failed to activate data caching:', error);
+    }
 }
 
 /**
@@ -53,9 +61,16 @@ export function handleActivateDataCaching(broadcastChannel, payload) {
  * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleDeactivateDataCaching(broadcastChannel, payload) {
+export async function handleDeactivateDataCaching(broadcastChannel, payload) {
     logger.debug(logPrefix, 'Deactivate data caching requested');
-    sendEvent(broadcastChannel, EVENTS.STATUS, getCurrentStatus());
+    try {
+        const { disableEngine } = await import('../data-cache-settings.js');
+        await disableEngine();
+        const status = await getCurrentStatus();
+        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+    } catch (error) {
+        logger.error(logPrefix, 'Failed to deactivate data caching:', error);
+    }
 }
 
 /**
@@ -63,9 +78,14 @@ export function handleDeactivateDataCaching(broadcastChannel, payload) {
  * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleCacheStatus(broadcastChannel, payload) {
+export async function handleCacheStatus(broadcastChannel, payload) {
     logger.debug(logPrefix, 'Cache status requested');
-    sendEvent(broadcastChannel, EVENTS.STATUS, getCurrentStatus());
+    try {
+        const status = await getCurrentStatus();
+        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+    } catch (error) {
+        logger.error(logPrefix, 'Failed to get cache status:', error);
+    }
 }
 
 /**
@@ -73,9 +93,14 @@ export function handleCacheStatus(broadcastChannel, payload) {
  * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleCacheDataAll(broadcastChannel, payload) {
+export async function handleCacheDataAll(broadcastChannel, payload) {
     logger.debug(logPrefix, 'Cache all data requested');
-    sendEvent(broadcastChannel, EVENTS.STATUS, getCurrentStatus());
+    try {
+        const status = await getCurrentStatus();
+        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+    } catch (error) {
+        logger.error(logPrefix, 'Failed to handle cache all data:', error);
+    }
 }
 
 /**
@@ -83,9 +108,14 @@ export function handleCacheDataAll(broadcastChannel, payload) {
  * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleCacheDataPresentation(broadcastChannel, payload) {
+export async function handleCacheDataPresentation(broadcastChannel, payload) {
     logger.debug(logPrefix, 'Cache presentation data requested:', payload.id);
-    sendEvent(broadcastChannel, EVENTS.STATUS, getCurrentStatus());
+    try {
+        const status = await getCurrentStatus();
+        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+    } catch (error) {
+        logger.error(logPrefix, 'Failed to handle cache presentation data:', error);
+    }
 }
 
 /**
