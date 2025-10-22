@@ -6,14 +6,20 @@ const SERVICE_WORKER_SCRIPT = '/sw.js';
 let isOnline = navigator.onLine;
 let registration = null;
 
-// Initialize PWA functionality
+/**
+ * Initialize PWA functionality
+ * @returns {Promise<void>}
+ */
 async function initPWA() {
     console.log('[PWA] Initializing PWA Controller');
     await registerServiceWorker();
 
 }
 
-// Register service worker
+/**
+ * Register service worker
+ * @returns {Promise<void>}
+ */
 async function registerServiceWorker() {
     // Register service worker
     if (! ('serviceWorker' in navigator) ) {
@@ -64,16 +70,26 @@ function handleServiceWorkerStateChange(event) {
         }
 }
 
+/**
+ * Handle when a new service worker version is found
+ * @param {Event} event - The update found event
+ */
 function handleRegistrationUpdateFound(event) {
         console.log('[PWA] New service worker version found');
         registration.installing.addEventListener('statechange', handleServiceWorkerStateChange);
 }
 
+/**
+ * Handle when a new service worker takes control
+ * @param {Event} event - The controller change event
+ */
 function handleServiceWorkerControllerChange(event) {
         console.log('[PWA] New service worker took control');
 }
 
-// Set up network monitoring
+/**
+ * Set up network monitoring
+ */
 function initNetworkMonitoring() {
   // Initial network status
   console.log('[PWA] Network:', isOnline ? 'online' : 'offline');
@@ -83,21 +99,28 @@ function initNetworkMonitoring() {
   window.addEventListener('offline', handleOffline);
 }
 
-// Handle online event
+/**
+ * Handle online event
+ */
 function handleOnline() {
   isOnline = true;
   console.log('[PWA] Network: online');
   onNetworkChange('online');
 }
 
-// Handle offline event
+/**
+ * Handle offline event
+ */
 function handleOffline() {
   isOnline = false;
   console.log('[PWA] Network: offline');
   onNetworkChange('offline');
 }
 
-// Handle network status change
+/**
+ * Handle network status change
+ * @param {string} status - Network status ('online' or 'offline')
+ */
 function onNetworkChange(status) {
   // Dispatch custom event for other parts of the app to listen to
   const event = new CustomEvent('networkchange', {
@@ -106,7 +129,10 @@ function onNetworkChange(status) {
   window.dispatchEvent(event);
 }
 
-// Check for service worker updates manually
+/**
+ * Check for service worker updates manually
+ * @returns {Promise<ServiceWorkerRegistration|undefined>}
+ */
 async function checkForUpdates() {
   if (!registration) {
     console.log('[PWA] No service worker registration found');
@@ -123,7 +149,10 @@ async function checkForUpdates() {
   }
 }
 
-// Get current app version from service worker
+/**
+ * Get current app version from service worker
+ * @returns {Promise<string|null>}
+ */
 async function getVersion() {
   if (!navigator.serviceWorker.controller) {
     return null;
@@ -144,7 +173,10 @@ async function getVersion() {
   });
 }
 
-// Get current network status
+/**
+ * Get current network status
+ * @returns {boolean}
+ */
 function getNetworkStatus() {
   return isOnline;
 }
