@@ -1,12 +1,8 @@
-// Service Worker for App Cache Management
-// Version: 1.1.0 - Modular Architecture
-
 import {logger} from '../js-common/utils/logging.js';
+import {cleanupOldAppCaches, initCache} from './utils/app-cache-manager.js';
 import {handleAppCacheRequest} from "./utils/app-fetch-handler.js";
 
 const logPrefix = '[SW]';
-
-import {cleanupOldAppCaches, initCache} from './utils/app-cache-manager.js';
 
 self.addEventListener('install', event => {
     logger.debug(logPrefix, 'Installing service worker');
@@ -28,7 +24,6 @@ self.addEventListener('activate', event => {
 
 // Serve from precache; fall back to network.
 self.addEventListener('fetch', event => {
-    const { request } = event;
-    logger.debug(logPrefix, 'Fetching:', request.url);
+    logger.debug(logPrefix, 'Fetching:', event.request.url);
     event.respondWith(handleAppCacheRequest(event));
 });
