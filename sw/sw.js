@@ -1,140 +1,42 @@
 // Service Worker for App Cache Management
 // Version: 1.1.0 - Modular Architecture
 
+import {handleAppCacheRequest} from "./utils/app-fetch-handler";
+
 const logPrefix = '[SW]';
 
-// Import utilities and handlers
-import { loadAppManifest } from './utils/app-manifest-loader.js';
-import { cacheAppAssets, cleanupOldAppCaches } from './utils/app-cache-manager.js';
-import { handleAppCacheRequest } from './utils/fetch-handler.js';
-import { handleVersionMessage } from './handlers/app-version-handler.js';
-import { handleCacheMessage } from './handlers/app-cache-handler.js';
+import {cleanupOldAppCaches, initCache} from './utils/app-cache-manager.js';
 
-// Service Worker Install Event
-self.addEventListener('install', async (event) => {
-  console.log(logPrefix, 'Install event triggered');
-
-  event.waitUntil(
-    (async () => {
-      const startTime = performance.now();
-
-      try {
-        const manifest = await loadAppManifest(true); // Force refresh on install
-
-        if (!manifest) {
-          console.log(logPrefix, 'Skipping caching - offline mode');
-          return;
-        }
-
-        // Use centralized caching function
-        const cacheResult = await cacheAppAssets(manifest, {
-          forceRefresh: false,
-        });
-
-        const duration = Math.round(performance.now() - startTime);
-        console.log(logPrefix, 'App cache install completed in', duration, 'ms -', 
-                   `${cacheResult.successful}/${cacheResult.total} assets cached`);
-
-        // Skip waiting to activate immediately
-        self.skipWaiting();
-
-      } catch (error) {
-        console.error(logPrefix, 'Install failed:', error);
-        // Don't skip waiting if install failed
-        throw error;
-      }
-    })()
-  );
+self.addEventListener('install', event => {
+    console.log(logPrefix, 'Installing service worker');
+    event.waitUntil((async () => {
+        await initCache()
+        await self.skipWaiting();
+        console.log(logPrefix, 'Service worker installed');
+    })());
 });
 
-// Service Worker Activate Event
-self.addEventListener('activate', async (event) => {
-  console.log(logPrefix, 'Activate event triggered');
-
-  event.waitUntil(
-    (async () => {
-      const startTime = performance.now();
-
-      try {
-        const manifest = await loadAppManifest();
-
-        if (!manifest) {
-          console.log(logPrefix, 'Skipping app cache cleanup - offline mode');
-        } else {
-          // Use centralized cleanup function
-          await cleanupOldAppCaches(manifest.version);
-        }
-
-        const duration = Math.round(performance.now() - startTime);
-        console.log(logPrefix, 'App cache activation complete in', duration, 'ms');
-
-        // Take control of all clients immediately
+self.addEventListener('activate', event => {
+    console.log(logPrefix, 'Activating service worker');
+    event.waitUntil((async () => {
+        await cleanupOldAppCaches()
         await self.clients.claim();
-        console.log(logPrefix, 'Claimed all clients');
-
-      } catch (error) {
-        console.error(logPrefix, 'Activation failed:', error);
-        // Still try to claim clients even if other operations failed
-        await self.clients.claim();
-        throw error;
-      }
-    })()
-  );
+        console.log(logPrefix, 'Service worker activated');
+    })());
 });
 
-// Service Worker Fetch Event
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Only handle GET requests for same origin
-  if (event.request.method !== 'GET' || url.origin !== location.origin) {
-    return;
-  }
-
-  // Handle all requests with app cache-first strategy (let cache determine availability)
-  event.respondWith(handleAppCacheRequest(event.request));
-});
-
-// Handle service worker messages
-self.addEventListener('message', async (event) => {
-  const { data } = event;
-
-  if (!data || !data.type) {
-    console.warn(logPrefix, 'Invalid message received:', data);
-    return;
-  }
-
-  console.log(logPrefix, 'Message received:', data.type);
-
-  try {
-    switch (data.type) {
-      case 'GET_APP_VERSION':
-      case 'FORCE_APP_MANIFEST_CHECK':
-        await handleVersionMessage(event);
-        break;
-
-      case 'UPDATE_APP_CACHE':
-      case 'CLEAR_APP_MANIFEST_CACHE':
-      case 'GET_APP_CACHE_STATUS':
-        await handleCacheMessage(event);
-        break;
-
-      default:
-        console.warn(logPrefix, 'Unknown message type:', data.type);
-    }
-  } catch (error) {
-    console.error(logPrefix, 'Error handling message:', data.type, error);
-  }
-});
-
-// Add error event handler for unhandled service worker errors
-self.addEventListener('error', (event) => {
-  console.error(logPrefix, 'Unhandled error:', event.error);
-});
-
-// Add unhandledrejection handler for unhandled promise rejections
-self.addEventListener('unhandledrejection', (event) => {
-  console.error(logPrefix, 'Unhandled promise rejection:', event.reason);
-  // Prevent the default handling (which would log to console anyway)
-  event.preventDefault();
+// Serve from precache; fall back to network.
+self.addEventListener('fetch', event => {
+    const { request } = event;
+    console.log(logPrefix, 'Fetching:', request.url);
+    event.respondWith((async () => {
+        // const cached = await caches.match(request, {ignoreSearch: false});
+        // if (cached) {
+        //     console.log(logPrefix, 'Cache hit for:', request.url);
+        // } else {
+        //     console.log(logPrefix, 'Cache miss for:', request.url, '- fetching from network');
+        // }
+        // return cached || fetch(request);
+        await handleAppCacheRequest(request);
+    })());
 });

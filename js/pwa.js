@@ -34,10 +34,10 @@ async function registerServiceWorker() {
     console.log('[PWA] SW registered with scope:', registration.scope);
 
     // Listen for service worker updates
-    registration.addEventListener('updatefound', handleRegistrationUpdateFound);
+    // registration.addEventListener('updatefound', handleRegistrationUpdateFound);
 
     // Listen for controlling service worker changes
-    navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerControllerChange);
+    // navigator.serviceWorker.addEventListener('controllerchange', handleServiceWorkerControllerChange);
 
     // Check for waiting service worker
     if (registration.waiting) {
@@ -341,7 +341,7 @@ if (document.readyState === 'loading') {
 } else {
   initPWA().then(() => {});
   initNetworkMonitoring();
-  initAutoAppCacheUpdate().then(() => {});
+  // initAutoAppCacheUpdate().then(() => {});
 }
 
 // Export functions for module usage
