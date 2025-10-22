@@ -1,6 +1,8 @@
 // Client Communication Utility
 // Handles messaging with service worker clients
 
+const logPrefix = '[SW-MESSENGER]';
+
 /**
  * Broadcast message to all clients
  * @param {Object} message - Message to broadcast
@@ -9,17 +11,17 @@
 export async function broadcastToClients(message) {
   try {
     const clients = await self.clients.matchAll();
-    console.log('[SW] Broadcasting to', clients.length, 'clients:', message.type);
+    console.log(logPrefix, 'Broadcasting to', clients.length, 'clients:', message.type);
 
     clients.forEach(client => {
       try {
         client.postMessage(message);
       } catch (error) {
-        console.error('[SW] Failed to send message to client:', error);
+        console.error(logPrefix, 'Failed to send message to client:', error);
       }
     });
   } catch (error) {
-    console.error('[SW] Failed to broadcast message:', error);
+    console.error(logPrefix, 'Failed to broadcast message:', error);
   }
 }
 

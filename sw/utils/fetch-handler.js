@@ -1,6 +1,8 @@
 // Fetch Request Handler Utility
 // Handles service worker fetch events
 
+const logPrefix = '[SW-FETCH]';
+
 import {getCachedManifest} from './app-manifest-loader.js';
 import {getAppCacheName} from './app-cache-manager.js';
 
@@ -49,37 +51,37 @@ export async function handleAppCacheRequest(request) {
 
       if (cachedResponse) {
       const duration = Math.round(performance.now() - startTime);
-      console.log('[SW] App cache hit:', pathname, `(${duration}ms)`);
+      console.log(logPrefix, 'App cache hit:', pathname, `(${duration}ms)`);
       return cachedResponse;
     }
 
     // If not in app cache, fetch from network
-    console.log('[SW] App cache miss, fetching:', pathname);
+    console.log(logPrefix, 'App cache miss, fetching:', pathname);
     const response = await fetch(request);
 
     const duration = Math.round(performance.now() - startTime);
 
     if (response.ok) {
-      console.log('[SW] Network fetch success:', pathname, `(${duration}ms)`);
+      console.log(logPrefix, 'Network fetch success:', pathname, `(${duration}ms)`);
     } else {
-      console.warn('[SW] Network fetch failed:', pathname, response.status, `(${duration}ms)`);
+      console.warn(logPrefix, 'Network fetch failed:', pathname, response.status, `(${duration}ms)`);
     }
 
     return response;
 
   } catch (error) {
     const duration = Math.round(performance.now() - startTime);
-    console.error('[SW] Request failed:', pathname, error.message, `(${duration}ms)`);
+    console.error(logPrefix, 'Request failed:', pathname, error.message, `(${duration}ms)`);
 
     // Try to serve any cached version as fallback
     try {
       const fallbackResponse = await caches.match(request);
       if (fallbackResponse) {
-        console.log('[SW] Served stale app cache as fallback:', pathname);
+        console.log(logPrefix, 'Served stale app cache as fallback:', pathname);
         return fallbackResponse;
       }
     } catch (fallbackError) {
-      console.error('[SW] Fallback app cache lookup failed:', fallbackError.message);
+      console.error(logPrefix, 'Fallback app cache lookup failed:', fallbackError.message);
     }
 
     // Return a user-friendly error response

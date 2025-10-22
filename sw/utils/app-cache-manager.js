@@ -1,6 +1,7 @@
 // Cache Management Utility
 // Handles app cache operations
 
+const logPrefix = '[SW-APP-CACHE]';
 const APP_CACHE_PREFIX = 'app-cache-v';
 
 /**
@@ -9,9 +10,7 @@ const APP_CACHE_PREFIX = 'app-cache-v';
  * @param {Object} options - Options for logging
  * @returns {Promise<Object>} Cleanup results
  */
-export async function cleanupOldAppCaches(currentVersion, options = {}) {
-  const { logPrefix = '[SW]' } = options;
-
+export async function cleanupOldAppCaches(currentVersion) {
   try {
     const currentCacheName = `${APP_CACHE_PREFIX}${currentVersion}`;
     const cacheNames = await caches.keys();
@@ -67,7 +66,7 @@ export async function cleanupOldAppCaches(currentVersion, options = {}) {
  * @returns {Promise<Object>} Caching results
  */
 export async function cacheAppAssets(manifest, options = {}) {
-  const { forceRefresh = false, logPrefix = '[SW]', cleanupOld = false } = options;
+  const { forceRefresh = false, cleanupOld = false } = options;
 
   if (!manifest || !Array.isArray(manifest.files)) {
     throw new Error('Invalid manifest or app files not available');
@@ -109,7 +108,7 @@ export async function cacheAppAssets(manifest, options = {}) {
 
   let cleanupResult = null;
   if (cleanupOld) {
-    cleanupResult = await cleanupOldAppCaches(manifest.version, { logPrefix });
+    cleanupResult = await cleanupOldAppCaches(manifest.version);
   }
 
   return {

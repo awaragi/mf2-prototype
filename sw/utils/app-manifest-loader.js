@@ -1,6 +1,7 @@
 // App Manifest Management Utility
 // Handles loading and caching of app manifest
 
+const logPrefix = '[SW-APP-MANIFEST]';
 const APP_MANIFEST_URL = '/app-manifest.json';
 
 // Cache manifest in memory to avoid repeated fetches
@@ -18,12 +19,12 @@ export async function loadAppManifest(forceRefresh = false) {
 
   // Use cached version if available and not expired
   if (!forceRefresh && cachedManifest && (now - manifestFetchTime) < MANIFEST_CACHE_TTL) {
-      console.log('[SW] Using memory cached manifest version:', cachedManifest.version);
+      console.log(logPrefix, 'Using memory cached manifest version:', cachedManifest.version);
     return cachedManifest;
   }
 
   try {
-    console.log('[SW] Loading app manifest...');
+    console.log(logPrefix, 'Loading app manifest...');
     // Add timestamp to ensure cache busting
     const cacheBustUrl = `${APP_MANIFEST_URL}?t=${Date.now()}`;
     const response = await fetch(cacheBustUrl, {
@@ -50,13 +51,13 @@ export async function loadAppManifest(forceRefresh = false) {
     cachedManifest = manifest;
     manifestFetchTime = now;
 
-    console.log('[SW] Loaded app cache manifest, version:', manifest.version);
+    console.log(logPrefix, 'Loaded app cache manifest, version:', manifest.version);
     return manifest;
   } catch (error) {
-    console.log('[SW] App manifest not available:', error.message);
+    console.log(logPrefix, 'App manifest not available:', error.message);
     // Keep using cached version if available, even if expired
     if (cachedManifest) {
-      console.log('[SW] Using cached manifest version:', cachedManifest.version);
+      console.log(logPrefix, 'Using cached manifest version:', cachedManifest.version);
       return cachedManifest;
     }
     return null;

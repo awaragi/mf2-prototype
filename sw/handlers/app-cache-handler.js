@@ -1,6 +1,8 @@
 // Cache Message Handler
 // Handles cache-related service worker messages
 
+const logPrefix = '[SW-APP-CACHE-HANDLER]';
+
 import { loadAppManifest, clearManifestCache, getCachedManifest } from '../utils/app-manifest-loader.js';
 import { cacheAppAssets, getAppCacheNames } from '../utils/app-cache-manager.js';
 import { sendResponse } from '../utils/client-messenger.js';
@@ -16,7 +18,7 @@ export async function handleCacheMessage(event) {
   try {
     switch (data.type) {
       case 'UPDATE_APP_CACHE': {
-        console.log('[SW] Forcing cache update...');
+        console.log(logPrefix, 'Forcing cache update...');
         const manifest = await loadAppManifest(true); // Force refresh
 
         if (!manifest) {
@@ -35,7 +37,6 @@ export async function handleCacheMessage(event) {
           // Use centralized caching function with force refresh and cleanup
           const cacheResult = await cacheAppAssets(manifest, {
             forceRefresh: true,
-            logPrefix: '[SW]',
             cleanupOld: true
           });
 
@@ -53,7 +54,7 @@ export async function handleCacheMessage(event) {
 
           sendResponse(event, response);
         } catch (error) {
-          console.error('[SW] App cache update failed:', error);
+          console.error(logPrefix, 'App cache update failed:', error);
           const response = {
             type: 'UPDATE_APP_CACHE_RESPONSE',
             success: false,
@@ -68,7 +69,7 @@ export async function handleCacheMessage(event) {
 
       case 'CLEAR_APP_MANIFEST_CACHE': {
         clearManifestCache();
-        console.log('[SW] Manifest cache cleared');
+        console.log(logPrefix, 'Manifest cache cleared');
         break;
       }
 
@@ -86,9 +87,9 @@ export async function handleCacheMessage(event) {
       }
 
       default:
-        console.warn('[SW] Unknown cache message type:', data.type);
+        console.warn(logPrefix, 'Unknown cache message type:', data.type);
     }
   } catch (error) {
-    console.error('[SW] Error handling cache message:', data.type, error);
+    console.error(logPrefix, 'Error handling cache message:', data.type, error);
   }
 }

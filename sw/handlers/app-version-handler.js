@@ -1,6 +1,8 @@
 // Version Message Handler
 // Handles version-related service worker messages
 
+const logPrefix = '[SW-APP-VERSION-HANDLER]';
+
 import { loadAppManifest, getCachedManifest } from '../utils/app-manifest-loader.js';
 import { broadcastToClients, sendResponse } from '../utils/client-messenger.js';
 
@@ -27,7 +29,7 @@ export async function handleVersionMessage(event) {
       }
 
       case 'FORCE_APP_MANIFEST_CHECK': {
-        console.log('[SW] Forcing app manifest check...');
+        console.log(logPrefix, 'Forcing app manifest check...');
         const oldVersion = getCachedManifest()?.version;
         const manifest = await loadAppManifest(true); // Force refresh
 
@@ -41,7 +43,7 @@ export async function handleVersionMessage(event) {
 
         // Notify about version change
         if (response.versionChanged) {
-          console.log('[SW] App version changed from', oldVersion, 'to', response.newVersion);
+          console.log(logPrefix, 'App version changed from', oldVersion, 'to', response.newVersion);
           await broadcastToClients({
             type: 'APP_VERSION_CHANGED',
             oldVersion,
@@ -55,9 +57,9 @@ export async function handleVersionMessage(event) {
       }
 
       default:
-        console.warn('[SW] Unknown version message type:', data.type);
+        console.warn(logPrefix, 'Unknown version message type:', data.type);
     }
   } catch (error) {
-    console.error('[SW] Error handling version message:', data.type, error);
+    console.error(logPrefix, 'Error handling version message:', data.type, error);
   }
 }
