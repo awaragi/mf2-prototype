@@ -319,13 +319,29 @@ async function updateAppCache() {
     });
 }
 
+async function initAutoAppCacheUpdate() {
+    console.log('[PWA] Scheduling update check');
+    // Schedule update check to run when service worker is ready
+    await scheduleCheckForAppUpdate().then(async (updateInformation) => {
+        if(updateInformation && updateInformation.versionChanged) {
+            console.log('[PWA] New version available', updateInformation.oldVersion, '->', updateInformation.newVersion);
+            await updateAppCache();
+            console.log('[PWA] App cache refreshed, will be applied on next visit/reload');
+        } else {
+            console.log('[PWA] No update available', updateInformation.error);
+        }
+    });
+}
+
 // Initialize PWA when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPWA);
   document.addEventListener('DOMContentLoaded', initNetworkMonitoring);
+  document.addEventListener('DOMContentLoaded', initAutoAppCacheUpdate);
 } else {
   initPWA().then(() => {});
   initNetworkMonitoring();
+  initAutoAppCacheUpdate().then(() => {});
 }
 
 // Export functions for module usage
