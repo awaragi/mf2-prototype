@@ -104,7 +104,7 @@ Enable structured **app ↔ SW** communication to request status and toggle cach
 Create durable stores to support caching; still plaintext assets at this stage.
 
 ### 📋 Implementation Directives (Agent)
-- `/pwa/cache-db.js` must create stores:
+- `/sw/cache-db.js` must create stores:
   - `meta` (key: `"settings"` → `{engineEnabled, targetContentVersion, lastCompleteContentVersion, telemetryEnabled, engineConcurrency}` …)
   - `progress` (key: `presentationId` → `{expected, credited, complete}`)
   - `assets` (key: `url` → `{url, blob|{iv,ct}, type, timestamp, expiresAt, keyVersion}`)
@@ -132,7 +132,7 @@ Create durable stores to support caching; still plaintext assets at this stage.
 Ensure all cached assets are **encrypted** before storing in IndexedDB.
 
 ### 📋 Implementation Directives (Agent)
-- `/pwa/crypto.js`:
+- `/sw/crypto.js`:
   - Use **AES-GCM-256** with random 12-byte IV per asset.
   - Implement `encrypt(plainBytes, keyVersion)` and `decrypt({iv, ct, type, keyVersion})`.
   - Logs: `[CRYPTO] WebCrypto OK`, `[CRYPTO] Encrypt → <bytes>`, `[CRYPTO] Decrypt → <type>`.
@@ -156,7 +156,7 @@ Ensure all cached assets are **encrypted** before storing in IndexedDB.
 Serve module responds to fetches for API & attachments without writing DB; prefers cache if available/fresh, else proxy network, else fallback.
 
 ### 📋 Implementation Directives (Agent)
-- Create `/pwa/sw-serve.js`:
+- Create `/sw/sw-serve.js`:
   - Intercept **GET** for `/api/*` and `/attachments/*`.
   - Decision order:
     1. Cache exists & fresh → decrypt & return (`[SERVE] Cache hit: <url>`).
@@ -179,7 +179,7 @@ Serve module responds to fetches for API & attachments without writing DB; prefe
 Add Engine that, when enabled, prefetches assets by presentation, encrypts, stores, and **credits** them.
 
 ### 📋 Implementation Directives (Agent)
-- Add `/pwa/sw-engine.js`:
+- Add `/sw/sw-engine.js`:
   - **Start/Resume** on `ACTIVATE_CACHING` or if `settings.engineEnabled=true`.
   - Fetch `/api/slides.json`; build expected URL sets **per presentation** (dedupe globally).
   - Concurrency cap: **4**.
