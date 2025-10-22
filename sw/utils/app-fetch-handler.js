@@ -1,29 +1,21 @@
-// Fetch Request Handler Utility
-// Handles service worker fetch events
+import {logger} from "../../js-common/utils/logging.js";
 
 const logPrefix = '[SW-FETCH]';
 
 /**
  * Handle requests with app cache-first strategy
- * @param {Request} request - The fetch request
  * @returns {Promise<Response>} The response
+ * @param event
  */
-export async function handleAppCacheRequest(request) {
-    const url = new URL(request.url);
-    let pathname = url.pathname;
-
-    // Normalize root path
-    if (pathname === '/') {
-        pathname = '/index.html';
-    }
+export async function handleAppCacheRequest(event) {
+    let {request, pathname} = extractRequest(event);
 
     const startTime = performance.now();
-
     try {
         // Try to find in cache first (more efficient approach)
         let cachedResponse;
 
-        // check all caches
+        // check all caches for original request
         cachedResponse = await caches.match(request);
 
         // If not found, try matching without query parameters
@@ -33,36 +25,36 @@ export async function handleAppCacheRequest(request) {
 
         if (cachedResponse) {
             const duration = Math.round(performance.now() - startTime);
-            console.log(logPrefix, 'App cache hit:', pathname, `(${duration}ms)`);
+            logger.debug(logPrefix, 'App cache hit:', pathname, `(${duration}ms)`);
             return cachedResponse;
         }
 
         // If not in app cache, fetch from network
-        console.log(logPrefix, 'App cache miss, fetching:', pathname);
+        logger.log(logPrefix, 'App cache miss, fetching:', pathname);
         const response = await fetch(request);
         const duration = Math.round(performance.now() - startTime);
 
         if (response.ok) {
-            console.log(logPrefix, 'Network fetch success:', pathname, `(${duration}ms)`);
+            logger.debug(logPrefix, 'Network fetch success:', pathname, `(${duration}ms)`);
         } else {
-            console.warn(logPrefix, 'Network fetch failed:', pathname, response.status, `(${duration}ms)`);
+            logger.debug(logPrefix, 'Network fetch failed:', pathname, response.status, `(${duration}ms)`);
         }
 
         return response;
 
-    } catch (error) {
+    } catch (fetchError) {
         const duration = Math.round(performance.now() - startTime);
-        console.error(logPrefix, 'Request failed:', pathname, error.message, `(${duration}ms)`);
+        logger.error(logPrefix, 'Request failed:', pathname, fetchError.message, `(${duration}ms)`);
 
         // Try to serve any cached version as fallback
         try {
             const fallbackResponse = await caches.match(request);
             if (fallbackResponse) {
-                console.log(logPrefix, 'Served stale app cache as fallback:', pathname);
+                logger.log(logPrefix, 'Served stale app cache as fallback:', pathname);
                 return fallbackResponse;
             }
         } catch (fallbackError) {
-            console.error(logPrefix, 'Fallback app cache lookup failed:', fallbackError.message);
+            logger.error(logPrefix, 'Fallback app cache lookup failed:', fallbackError.message);
         }
 
         // Return a user-friendly error response
@@ -85,3 +77,28 @@ export async function handleAppCacheRequest(request) {
         });
     }
 }
+
+/**
+ * Extract request details from the event
+ * @param event
+ */
+function extractRequest(event) {
+    const request = event.request;
+    const url = new URL(request.url);
+    let pathname = url.pathname;
+
+    pathname = pathname.trim();
+
+    // App-shell for navigations (SPA)
+    if (request.mode === 'navigate') {
+        pathname = '/index.html';
+    }
+
+    // Normalize paths
+    if (pathname.endsWith('/')) {
+        pathname = pathname + 'index.html';
+    }
+
+    return {request, pathname};
+}
+

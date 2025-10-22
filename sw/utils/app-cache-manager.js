@@ -1,4 +1,5 @@
 import {APP_CACHE} from '../../app-manifest.js';
+import { logger } from '../../js-common/utils/logging.js';
 
 const logPrefix = '[SW-CACHE-MANAGER]';
 
@@ -24,7 +25,7 @@ export function digest(str) {
  */
 export async function initCache() {
     await caches.open(CACHE_NAME);
-    console.log(logPrefix, 'Cache opened:', CACHE_NAME);
+    logger.log(logPrefix, 'Cache opened:', CACHE_NAME);
     // Build Request objects so you can control cache mode if needed.
     const assets = Object.keys(APP_CACHE);
     await cacheAppAssets(CACHE_NAME, assets);
@@ -44,10 +45,10 @@ async function cacheAppAssets(cacheName, files, options = {}) {
         throw new Error('Invalid file list or app files not available');
     }
 
-    console.log(logPrefix, 'Opening app cache:', cacheName);
+    logger.debug(logPrefix, 'Opening app cache:', cacheName);
 
     const cache = await caches.open(cacheName);
-    console.log(logPrefix, 'Caching app assets:', files);
+    logger.debug(logPrefix, 'Caching app assets:', files);
 
     // Cache assets with individual error handling
     const cachePromises = files.map(async (url) => {
@@ -60,12 +61,12 @@ async function cacheAppAssets(cacheName, files, options = {}) {
             }
 
             await cache.put(url, response);
-            console.log(logPrefix, forceRefresh ? 'Updated app cache for:' : 'Added to app cache:', url);
+            logger.debug(logPrefix, forceRefresh ? 'Updated app cache for:' : 'Added to app cache:', url);
 
             return { url, success: true };
-        } catch (error) {
-            console.error(logPrefix, forceRefresh ? 'Failed to update app cache for:' : 'Failed to add to app cache:', url, error.message);
-            return { url, success: false, error: error.message };
+        } catch (e) {
+            logger.error(logPrefix, forceRefresh ? 'Failed to update app cache for:' : 'Failed to add to app cache:', url, e.message);
+            return { url, success: false, error: e.message };
         }
     });
 
@@ -75,7 +76,7 @@ async function cacheAppAssets(cacheName, files, options = {}) {
     const successful = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
     const failed = results.filter(r => r.status === 'rejected' || !r.value.success).length;
 
-    console.log(logPrefix, `App cache operation completed: ${successful} successful, ${failed} failed`);
+    logger.log(logPrefix, `App cache operation completed: ${successful} successful, ${failed} failed`);
 
     let cleanupResult = null;
     if (cleanupOld) {
@@ -104,21 +105,21 @@ export async function cleanupOldAppCaches() {
         );
 
         if (oldAppCaches.length === 0) {
-            console.log(logPrefix, 'No old app caches to delete');
+            logger.log(logPrefix, 'No old app caches to delete');
             return { deleted: [], failed: [] };
         }
 
-        console.log(logPrefix, 'Deleting old app caches:', oldAppCaches);
+        logger.log(logPrefix, 'Deleting old app caches:', oldAppCaches);
 
         const deletionResults = await Promise.allSettled(
             oldAppCaches.map(async (cacheName) => {
                 try {
                     const deleted = await caches.delete(cacheName);
-                    console.log(logPrefix, 'Deleted old app cache:', cacheName, deleted ? 'success' : 'failed');
+                    logger.debug(logPrefix, 'Deleted old app cache:', cacheName, deleted ? 'success' : 'failed');
                     return { cacheName, deleted };
-                } catch (error) {
-                    console.error(logPrefix, 'Failed to delete app cache:', cacheName, error);
-                    return { cacheName, deleted: false, error: error.message };
+                } catch (e) {
+                    logger.error(logPrefix, 'Failed to delete app cache:', cacheName, e);
+                    return { cacheName, deleted: false, error: e.message };
                 }
             })
         );
@@ -132,14 +133,14 @@ export async function cleanupOldAppCaches() {
             .map(result => result.value?.cacheName || 'unknown');
 
         if (failed.length > 0) {
-            console.warn(logPrefix, 'Some app caches could not be deleted:', failed);
+            logger.warn(logPrefix, 'Some app caches could not be deleted:', failed);
         }
 
-        console.log(logPrefix, `App cache cleanup completed: ${deleted.length} deleted, ${failed.length} failed`);
+        logger.debug(logPrefix, `App cache cleanup completed: ${deleted.length} deleted, ${failed.length} failed`);
 
         return { deleted, failed };
-    } catch (error) {
-        console.error(logPrefix, 'App cache cleanup failed:', error);
-        return { deleted: [], failed: [], error: error.message };
+    } catch (e) {
+        logger.error(logPrefix, 'App cache cleanup failed:', e);
+        return { deleted: [], failed: [], error: e.message };
     }
 }
