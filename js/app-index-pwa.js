@@ -10,39 +10,11 @@ let cacheStatusElement = null;
 let cacheToggleButton = null;
 let broadcastChannel = null;
 
-// Cache state persistence key
-const CACHE_STATE_KEY = 'pwa-cache-state';
-
-// Default cache state
-const DEFAULT_CACHE_STATE = {
+// Current cache state (updated from service worker)
+let currentCacheState = {
     enabled: false,
     state: 'off'
 };
-
-/**
- * Get current cache state from localStorage
- */
-function getCurrentCacheState() {
-    try {
-        const stored = localStorage.getItem(CACHE_STATE_KEY);
-        return stored ? JSON.parse(stored) : DEFAULT_CACHE_STATE;
-    } catch (error) {
-        console.warn(logPrefix, 'Error reading cache state from localStorage:', error);
-        return DEFAULT_CACHE_STATE;
-    }
-}
-
-/**
- * Save cache state to localStorage
- */
-function saveCacheState(state) {
-    try {
-        localStorage.setItem(CACHE_STATE_KEY, JSON.stringify(state));
-        console.log(logPrefix, 'Cache state saved to localStorage:', state);
-    } catch (error) {
-        console.warn(logPrefix, 'Error saving cache state to localStorage:', error);
-    }
-}
 
 /**
  * Initialize PWA controls for index page
@@ -59,28 +31,19 @@ function initIndexPWA() {
         return;
     }
 
-    // Load cache state from localStorage
-    const currentState = getCurrentCacheState();
-    console.log(logPrefix, 'Loaded cache state from localStorage:', currentState);
-
     // Set up event listeners
     cacheToggleButton.addEventListener('click', handleCacheToggle);
 
     // Initialize broadcast channel for receiving status updates
     initBroadcastChannel();
 
-    // Update UI with loaded state
-    updateCacheStatus(currentState);
+    // Update UI with current state (will be updated when service worker responds)
+    updateCacheStatus(currentCacheState);
 
-    // Notify service worker of current state and request it to act accordingly
+    // Always request current cache status from service worker
     setTimeout(() => {
-        if (currentState.enabled) {
-            console.log(logPrefix, 'Notifying service worker to activate caching based on stored state');
-            toggleDataCaching(true);
-        } else {
-            console.log(logPrefix, 'Requesting current cache status from service worker');
-            requestCacheStatus();
-        }
+        console.log(logPrefix, 'Requesting current cache status from service worker');
+        requestCacheStatus();
     }, 100); // Small delay to ensure PWA is initialized
 }
 
@@ -113,21 +76,13 @@ function handlePWAEvent(event) {
  * Handle cache toggle button click
  */
 function handleCacheToggle() {
-    const currentState = getCurrentCacheState();
-    console.log(logPrefix, 'Cache toggle clicked, current state:', currentState);
+    console.log(logPrefix, 'Cache toggle clicked, current state:', currentCacheState);
 
     // Disable button during toggle
     cacheToggleButton.disabled = true;
 
     // Toggle caching state
-    const newEnabled = !currentState.enabled;
-
-    // Update localStorage state immediately
-    const newState = {
-        enabled: newEnabled,
-        state: newEnabled ? 'partial' : 'off'
-    };
-    saveCacheState(newState);
+    const newEnabled = !currentCacheState.enabled;
 
     // Send toggle command to service worker
     toggleDataCaching(newEnabled);
@@ -135,15 +90,8 @@ function handleCacheToggle() {
     // Update UI immediately for responsiveness
     updateToggleButton(newEnabled ? 'enabling' : 'disabling');
 
-    // Simulate completion after a short delay (temporary until real SW responds)
-    setTimeout(() => {
-        const finalState = {
-            enabled: newEnabled,
-            state: newEnabled ? 'full' : 'off'
-        };
-        saveCacheState(finalState);
-        updateCacheStatus(finalState);
-    }, 1000);
+    // Wait for service worker to respond with actual status update
+    // The UI will be updated when the service worker broadcasts the new status
 }
 
 /**
@@ -152,32 +100,24 @@ function handleCacheToggle() {
 function updateCacheStatus(status) {
     console.debug(logPrefix, 'Updating cache status:', status);
 
-        let newState;
+    // Handle both direct state updates and service worker payload format
+    if (status.dataCaching) {
+        // Service worker payload format
+        currentCacheState = {
+            enabled: status.dataCaching.enabled || false,
+            state: status.dataCaching.state || 'off'
+        };
+    } else if (status.enabled !== undefined) {
+        // Direct state format
+        currentCacheState = {
+            enabled: status.enabled,
+            state: status.state || 'off'
+        };
+    }
 
-        // Handle both direct state updates and service worker payload format
-        if (status.dataCaching) {
-            // Service worker payload format
-            newState = {
-                enabled: status.dataCaching.enabled || false,
-                state: status.dataCaching.state || 'off'
-            };
-        } else if (status.enabled !== undefined) {
-            // Direct state format
-            newState = {
-                enabled: status.enabled,
-                state: status.state || 'off'
-            };
-        } else {
-            // Use current localStorage state
-            newState = getCurrentCacheState();
-        }
-
-        // Save updated state to localStorage
-        saveCacheState(newState);
-
-        // Update status badge
-        if (cacheStatusElement) {
-            const { enabled, state } = newState;
+    // Update status badge
+    if (cacheStatusElement) {
+        const { enabled, state } = currentCacheState;
         let badgeClass = 'bg-secondary';
         let statusText = 'Cache: Unknown';
 
@@ -215,7 +155,7 @@ function updateCacheStatus(status) {
 function updateToggleButton(transitionState = null) {
     if (!cacheToggleButton) return;
 
-    const { enabled, state } = getCurrentCacheState();
+    const { enabled, state } = currentCacheState;
 
     // Handle transition states
     if (transitionState) {
