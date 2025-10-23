@@ -88,13 +88,21 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
     logger.debug(logPrefix, 'Activating service worker');
     event.waitUntil((async () => {
-        await cleanupOldAppCaches();
-        await self.clients.claim();
+        try {
+            await cleanupOldAppCaches();
+            await self.clients.claim();
 
-        // Initialize data cache engine if enabled
-        await initializeEngine();
+            // Initialize data cache engine if enabled
+            logger.debug(logPrefix, 'Initializing data cache engine...');
+            await initializeEngine();
+            logger.debug(logPrefix, 'Data cache engine initialization complete');
 
-        logger.log(logPrefix, 'Service worker activated');
+            logger.log(logPrefix, 'Service worker activated');
+        } catch (error) {
+            logger.error(logPrefix, 'Service worker activation failed:', error);
+            logger.error(logPrefix, 'Activation error stack:', error.stack);
+            throw error;
+        }
     })());
 });
 

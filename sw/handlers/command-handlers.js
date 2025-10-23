@@ -1,6 +1,7 @@
 import {logger} from '../../js-common/utils/logging.js';
 import {EVENTS} from '../../js-common/events.js';
 import {disableEngine, enableEngine, getEngineEnabled} from '../data-cache-settings.js';
+import { startEngine, stopEngine } from '../data-cache-engine.js';
 
 const logPrefix = '[SW-HANDLER]';
 
@@ -55,6 +56,8 @@ export async function handleActivateDataCaching(payload) {
     logger.debug(logPrefix, 'Activate data caching requested');
     try {
         await enableEngine();
+        // Start the data cache engine immediately when manually activated
+        await startEngine(false);
         const status = await getCurrentStatus();
         await sendEvent(EVENTS.STATUS, status);
     } catch (error) {
@@ -70,6 +73,8 @@ export async function handleDeactivateDataCaching(payload) {
     logger.debug(logPrefix, 'Deactivate data caching requested');
     try {
         await disableEngine();
+        // Stop the data cache engine immediately when manually deactivated
+        await stopEngine();
         const status = await getCurrentStatus();
         await sendEvent(EVENTS.STATUS, status);
     } catch (error) {

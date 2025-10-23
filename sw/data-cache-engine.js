@@ -3,7 +3,7 @@ import { putAsset, getAsset, getProgress, setProgress, creditUrl, markPresentati
 import { logger } from '../js-common/utils/logging.js';
 
 // Configuration constants
-const ENGINE_MAX_CONCURRENCY = 1;
+let ENGINE_MAX_CONCURRENCY = 1; // Will be updated from settings
 const PROGRESS_BATCH_SIZE = 1; // Emit progress events every N assets
 const logPrefix = '[ENGINE]';
 
@@ -43,6 +43,12 @@ export async function initializeEngine() {
 
   try {
     const settings = await getSettings();
+    logger.info(logPrefix, 'Settings loaded:', settings);
+
+    // Update concurrency from settings
+    ENGINE_MAX_CONCURRENCY = settings.engineConcurrency || 1;
+    logger.info(logPrefix, 'Engine concurrency set to:', ENGINE_MAX_CONCURRENCY);
+
     if (settings.engineEnabled) {
       logger.info(logPrefix, 'Engine enabled in settings, starting engine');
       await startEngine(true); // Resume mode
@@ -53,8 +59,10 @@ export async function initializeEngine() {
     }
   } catch (error) {
     logger.error(logPrefix, 'Engine initialization failed:', error);
+    logger.error(logPrefix, 'Error details:', error.stack);
     engineState = 'off';
     emitStatus();
+    throw error; // Re-throw to make failure visible in SW activation
   }
 }
 
@@ -63,6 +71,8 @@ export async function startEngine(resume = false) {
 
   try {
     const settings = await getSettings();
+    logger.info(logPrefix, 'Start - settings check:', { engineEnabled: settings.engineEnabled });
+
     if (!settings.engineEnabled) {
       logger.info(logPrefix, 'Engine disabled in settings');
       engineState = 'off';
@@ -70,18 +80,32 @@ export async function startEngine(resume = false) {
       return;
     }
 
+    logger.info(logPrefix, 'Setting isRunning = true');
     isRunning = true;
+
+    logger.info(logPrefix, 'Building asset map...');
     await buildAssetMap();
+
+    logger.info(logPrefix, 'Loading progress...');
     await loadProgress();
+
+    logger.info(logPrefix, 'Updating state...');
     await updateState();
+
+    logger.info(logPrefix, 'Emitting status...');
     emitStatus();
 
     if (engineState !== 'full') {
+      logger.info(logPrefix, `Engine state is ${engineState}, starting prefetch...`);
       await runPrefetch();
+    } else {
+      logger.info(logPrefix, 'Engine state is full, skipping prefetch');
     }
   } catch (error) {
     logger.error(logPrefix, 'Start failed:', error);
+    logger.error(logPrefix, 'Start error stack:', error.stack);
     isRunning = false;
+    throw error; // Re-throw to make failure visible
   }
 }
 
