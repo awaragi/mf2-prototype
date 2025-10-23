@@ -1,14 +1,13 @@
 // PWA functionality for index page - cache status and toggle controls
 
 import { toggleDataCaching, requestCacheStatus } from './pwa.js';
-import { EVENTS, CHANNEL_NAME } from '../js-common/events.js';
+import { EVENTS } from '../js-common/events.js';
 
 const logPrefix = '[INDEX-PWA]';
 
 // DOM elements
 let cacheStatusElement = null;
 let cacheToggleButton = null;
-let broadcastChannel = null;
 
 // Current cache state (updated from service worker)
 let currentCacheState = {
@@ -34,8 +33,8 @@ function initIndexPWA() {
     // Set up event listeners
     cacheToggleButton.addEventListener('click', handleCacheToggle);
 
-    // Initialize broadcast channel for receiving status updates
-    initBroadcastChannel();
+    // Initialize service worker messaging for receiving status updates
+    initServiceWorkerMessaging();
 
     // Update UI with current state (will be updated when service worker responds)
     updateCacheStatus(currentCacheState);
@@ -48,28 +47,19 @@ function initIndexPWA() {
 }
 
 /**
- * Initialize BroadcastChannel for receiving PWA events
+ * Initialize Service Worker messaging for receiving PWA events
  */
-function initBroadcastChannel() {
-    if (typeof BroadcastChannel === 'undefined') {
-        console.warn(logPrefix, 'BroadcastChannel not supported');
-        return;
-    }
+function initServiceWorkerMessaging() {
+    // Listen for messages from service worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        const { type, payload } = event.data || {};
 
-    broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
-    broadcastChannel.addEventListener('message', handlePWAEvent);
-    console.log(logPrefix, 'BroadcastChannel initialized for status updates');
-}
+        if (type === EVENTS.STATUS) {
+            updateCacheStatus(payload);
+        }
+    });
 
-/**
- * Handle PWA events from service worker
- */
-function handlePWAEvent(event) {
-    const { type, payload } = event.data;
-
-    if (type === EVENTS.STATUS) {
-        updateCacheStatus(payload);
-    }
+    console.log(logPrefix, 'Service Worker messaging initialized for status updates');
 }
 
 /**

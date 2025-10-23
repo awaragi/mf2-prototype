@@ -22,34 +22,41 @@ export async function getCurrentStatus() {
     };
 }
 
+// Global reference to broadcast function (set by SW)
+let broadcastToPages = null;
+
 /**
- * Send event to app via BroadcastChannel
- * @param {BroadcastChannel} broadcastChannel
+ * Set the broadcast function for sending events to pages
+ * @param {Function} broadcastFn - Function to broadcast messages to all pages
+ */
+export function setBroadcastFunction(broadcastFn) {
+    broadcastToPages = broadcastFn;
+}
+
+/**
+ * Send event to all pages
  * @param {string} eventType - Event type from EVENTS
  * @param {Object} payload - Event payload
  */
-function sendEvent(broadcastChannel, eventType, payload = {}) {
-    if (!broadcastChannel) {
-        return;
+async function sendEvent(eventType, payload = {}) {
+    if (broadcastToPages) {
+        await broadcastToPages({
+            type: eventType,
+            payload: payload
+        });
     }
-
-    broadcastChannel.postMessage({
-        type: eventType,
-        payload: payload
-    });
 }
 
 /**
  * Handle activate data caching command
- * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export async function handleActivateDataCaching(broadcastChannel, payload) {
+export async function handleActivateDataCaching(payload) {
     logger.debug(logPrefix, 'Activate data caching requested');
     try {
         await enableEngine();
         const status = await getCurrentStatus();
-        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+        await sendEvent(EVENTS.STATUS, status);
     } catch (error) {
         logger.error(logPrefix, 'Failed to activate data caching:', error);
     }
@@ -57,45 +64,28 @@ export async function handleActivateDataCaching(broadcastChannel, payload) {
 
 /**
  * Handle deactivate data caching command
- * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export async function handleDeactivateDataCaching(broadcastChannel, payload) {
+export async function handleDeactivateDataCaching(payload) {
     logger.debug(logPrefix, 'Deactivate data caching requested');
     try {
         await disableEngine();
         const status = await getCurrentStatus();
-        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+        await sendEvent(EVENTS.STATUS, status);
     } catch (error) {
         logger.error(logPrefix, 'Failed to deactivate data caching:', error);
     }
 }
 
 /**
- * Handle cache status request
- * @param {BroadcastChannel} broadcastChannel
- * @param {Object} payload
- */
-export async function handleCacheStatus(broadcastChannel, payload) {
-    logger.debug(logPrefix, 'Cache status requested');
-    try {
-        const status = await getCurrentStatus();
-        sendEvent(broadcastChannel, EVENTS.STATUS, status);
-    } catch (error) {
-        logger.error(logPrefix, 'Failed to get cache status:', error);
-    }
-}
-
-/**
  * Handle cache all data command
- * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export async function handleCacheDataAll(broadcastChannel, payload) {
+export async function handleCacheDataAll(payload) {
     logger.debug(logPrefix, 'Cache all data requested');
     try {
         const status = await getCurrentStatus();
-        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+        await sendEvent(EVENTS.STATUS, status);
     } catch (error) {
         logger.error(logPrefix, 'Failed to handle cache all data:', error);
     }
@@ -103,14 +93,13 @@ export async function handleCacheDataAll(broadcastChannel, payload) {
 
 /**
  * Handle cache presentation data command
- * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export async function handleCacheDataPresentation(broadcastChannel, payload) {
+export async function handleCacheDataPresentation(payload) {
     logger.debug(logPrefix, 'Cache presentation data requested:', payload.id);
     try {
         const status = await getCurrentStatus();
-        sendEvent(broadcastChannel, EVENTS.STATUS, status);
+        await sendEvent(EVENTS.STATUS, status);
     } catch (error) {
         logger.error(logPrefix, 'Failed to handle cache presentation data:', error);
     }
@@ -118,10 +107,9 @@ export async function handleCacheDataPresentation(broadcastChannel, payload) {
 
 /**
  * Handle nuke data command
- * @param {BroadcastChannel} broadcastChannel
  * @param {Object} payload
  */
-export function handleNukeData(broadcastChannel, payload) {
+export async function handleNukeData(payload) {
     logger.debug(logPrefix, 'Nuke data requested');
-    sendEvent(broadcastChannel, EVENTS.NUKE_DATA_COMPLETE, {message: 'Data nuke not implemented yet'});
+    await sendEvent(EVENTS.NUKE_DATA_COMPLETE, {message: 'Data nuke not implemented yet'});
 }

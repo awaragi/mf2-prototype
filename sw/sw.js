@@ -1,63 +1,85 @@
 import {logger} from '../js-common/utils/logging.js';
 import {cleanupOldAppCaches, initCache} from './utils/app-cache-manager.js';
 import {handleAppCacheRequest} from "./utils/app-fetch-handler.js";
-import {COMMANDS, CHANNEL_NAME} from '../js-common/events.js';
+import {COMMANDS} from '../js-common/events.js';
 import {
     handleActivateDataCaching,
     handleDeactivateDataCaching,
-    handleCacheStatus,
+    getCurrentStatus,
     handleCacheDataAll,
     handleCacheDataPresentation,
-    handleNukeData
+    handleNukeData,
+    setBroadcastFunction
 } from './handlers/command-handlers.js';
-import { initializeEngine } from './data-cache-engine.js';
+import { initializeEngine, setMessageCallback } from './data-cache-engine.js';
 
 const logPrefix = '[SW]';
-let broadcastChannel = null;
-
-// Initialize BroadcastChannel for messaging
-function initBroadcastChannel() {
-    if (typeof BroadcastChannel === 'undefined') {
-        logger.warn(logPrefix, 'BroadcastChannel not supported');
-        return;
-    }
-
-    broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
-    broadcastChannel.addEventListener('message', handleBroadcastMessage);
-    logger.debug(logPrefix, 'BroadcastChannel initialized');
-}
-
-// Command handler dictionary
-const commandHandlers = {
-    [COMMANDS.ACTIVATE_DATA_CACHING]: handleActivateDataCaching,
-    [COMMANDS.DEACTIVATE_DATA_CACHING]: handleDeactivateDataCaching,
-    [COMMANDS.CACHE_STATUS]: handleCacheStatus,
-    [COMMANDS.CACHE_DATA_ALL]: handleCacheDataAll,
-    [COMMANDS.CACHE_DATA_PRESENTATION]: handleCacheDataPresentation,
-    [COMMANDS.NUKE_DATA]: handleNukeData
-};
 
 /**
- * Handle incoming broadcast messages from app
- * @param {MessageEvent} event
+ * Broadcast message to all controlled pages
+ * @param {Object} message - Message to broadcast
  */
-function handleBroadcastMessage(event) {
-    const {type, payload} = event.data;
-    logger.debug(logPrefix, 'CMD:', type, payload);
-
-    const handler = commandHandlers[type];
-    if (handler) {
-        handler(broadcastChannel, payload);
-    } else {
-        logger.debug(logPrefix, 'Unknown command type:', type);
+async function broadcastToPages(message) {
+    const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: false });
+    for (const client of clientsList) {
+        client.postMessage(message);
     }
 }
+
+// Handle incoming messages from pages
+self.addEventListener('message', async (event) => {
+    const port = event.ports?.[0] || null;
+    const { type, payload } = event.data || {};
+
+    logger.debug(logPrefix, 'CMD:', type, payload);
+
+    try {
+        switch (type) {
+            case COMMANDS.CACHE_STATUS:
+                const status = await getCurrentStatus();
+                port?.postMessage({ ok: true, status });
+                await broadcastToPages({ type: 'STATUS', payload: status });
+                break;
+
+            case COMMANDS.ACTIVATE_DATA_CACHING:
+                await handleActivateDataCaching(payload);
+                break;
+
+            case COMMANDS.DEACTIVATE_DATA_CACHING:
+                await handleDeactivateDataCaching(payload);
+                break;
+
+            case COMMANDS.CACHE_DATA_ALL:
+                await handleCacheDataAll(payload);
+                break;
+
+            case COMMANDS.CACHE_DATA_PRESENTATION:
+                await handleCacheDataPresentation(payload);
+                break;
+
+            case COMMANDS.NUKE_DATA:
+                await handleNukeData(payload);
+                break;
+
+            default:
+                logger.debug(logPrefix, 'Unknown command type:', type);
+                port?.postMessage({ ok: false, error: 'Unknown command' });
+                break;
+        }
+    } catch (error) {
+        logger.error(logPrefix, 'Command handler error:', error);
+        port?.postMessage({ ok: false, error: String(error) });
+    }
+});
 
 self.addEventListener('install', event => {
     logger.debug(logPrefix, 'Installing service worker');
     event.waitUntil((async () => {
         await initCache();
-        initBroadcastChannel();
+        // Set up data cache engine to broadcast messages to pages
+        setMessageCallback(broadcastToPages);
+        // Set broadcast function in command handlers
+        setBroadcastFunction(broadcastToPages);
         await self.skipWaiting();
         logger.log(logPrefix, 'Service worker installed');
     })());
@@ -67,9 +89,6 @@ self.addEventListener('activate', event => {
     logger.debug(logPrefix, 'Activating service worker');
     event.waitUntil((async () => {
         await cleanupOldAppCaches();
-        if (!broadcastChannel) {
-            initBroadcastChannel();
-        }
         await self.clients.claim();
 
         // Initialize data cache engine if enabled

@@ -1,7 +1,7 @@
 // PWA Control Script
 import {logger} from '../js-common/utils/logging.js';
 import {initNetworkMonitoring} from "./utils/network-monitor.js";
-import {COMMANDS, EVENTS, CHANNEL_NAME} from '../js-common/events.js';
+import {COMMANDS, EVENTS} from '../js-common/events.js';
 import {
     handleStatusEvent,
     handleDataCachingProgressEvent,
@@ -17,7 +17,6 @@ const logPrefix = '[PWA]';
 
 // PWA state variables
 let registration = null;
-let broadcastChannel = null;
 
 /**
  * Initialize PWA functionality
@@ -26,7 +25,7 @@ let broadcastChannel = null;
 async function initPWA() {
     logger.debug(logPrefix, 'Initializing PWA Controller');
     await registerServiceWorker();
-    initBroadcastChannel();
+    initServiceWorkerMessaging();
 }
 
 /**
@@ -65,17 +64,23 @@ function handleServiceWorkerControllerChange() {
 }
 
 /**
- * Initialize BroadcastChannel for PWA messaging
+ * Initialize Service Worker messaging
  */
-function initBroadcastChannel() {
-    if (typeof BroadcastChannel === 'undefined') {
-        logger.warn(logPrefix, 'BroadcastChannel not supported');
-        return;
-    }
+function initServiceWorkerMessaging() {
+    // Listen for broadcasts from service worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        const { type, payload } = event.data || {};
+        logger.debug(logPrefix + ' EVT', type, payload);
 
-    broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
-    broadcastChannel.addEventListener('message', handleBroadcastMessage);
-    logger.debug(logPrefix, 'BroadcastChannel initialized');
+        const handler = eventHandlers[type];
+        if (handler) {
+            handler(payload);
+        } else {
+            logger.debug(logPrefix, 'Unknown event type:', type);
+        }
+    });
+
+    logger.debug(logPrefix, 'Service Worker messaging initialized');
 }
 
 // Event handler dictionary
@@ -90,44 +95,76 @@ const eventHandlers = {
 };
 
 /**
- * Handle incoming broadcast messages from service worker
- * @param {MessageEvent} event
- */
-function handleBroadcastMessage(event) {
-    const {type, payload} = event.data;
-    logger.debug(logPrefix + ' EVT', type, payload);
-
-    const handler = eventHandlers[type];
-    if (handler) {
-        handler(payload);
-    } else {
-        logger.debug(logPrefix, 'Unknown event type:', type);
-    }
-}
-
-/**
- * Send command to service worker
+ * Send fire-and-forget command to service worker
  * @param {string} command - Command type from COMMANDS
  * @param {Object} payload - Command payload
  */
 function sendCommand(command, payload = {}) {
-    if (!broadcastChannel) {
-        logger.warn(logPrefix, 'BroadcastChannel not available');
+    const ctrl = navigator.serviceWorker.controller;
+    if (!ctrl) {
+        logger.warn(logPrefix, 'Service Worker not controlling page; command skipped:', command);
         return;
     }
 
     logger.debug(logPrefix, 'User requested:', command);
-    broadcastChannel.postMessage({
+    ctrl.postMessage({
         type: command,
         payload: payload
     });
 }
 
 /**
+ * Send command to service worker and wait for response
+ * @param {string} command - Command type from COMMANDS
+ * @param {Object} payload - Command payload
+ * @returns {Promise<any>} Response from service worker
+ */
+function sendCommandAndWait(command, payload = {}) {
+    return new Promise((resolve, reject) => {
+        const post = () => {
+            const ctrl = navigator.serviceWorker.controller;
+            if (!ctrl) {
+                reject(new Error('No Service Worker controller'));
+                return;
+            }
+
+            const mc = new MessageChannel();
+            mc.port1.onmessage = (event) => resolve(event.data);
+            mc.port1.onmessageerror = reject;
+
+            logger.debug(logPrefix, 'User requested (await):', command);
+            ctrl.postMessage({ type: command, payload }, [mc.port2]);
+        };
+
+        if (navigator.serviceWorker.controller) {
+            post();
+        } else {
+            navigator.serviceWorker.ready.then(() => {
+                if (navigator.serviceWorker.controller) {
+                    post();
+                } else {
+                    reject(new Error('Service Worker not controlling this page yet'));
+                }
+            });
+        }
+    });
+}
+
+/**
  * Request cache status from service worker
  */
-function requestCacheStatus() {
-    sendCommand(COMMANDS.CACHE_STATUS);
+async function requestCacheStatus() {
+    try {
+        const response = await sendCommandAndWait(COMMANDS.CACHE_STATUS);
+        if (response.ok) {
+            // Status will be broadcast to all pages via SW message
+            logger.debug(logPrefix, 'Cache status retrieved:', response.status);
+        } else {
+            logger.error(logPrefix, 'Failed to get cache status:', response.error);
+        }
+    } catch (error) {
+        logger.error(logPrefix, 'Cache status request failed:', error);
+    }
 }
 
 /**
@@ -173,6 +210,7 @@ if (document.readyState === 'loading') {
 // Export functions for module usage
 export {
     sendCommand,
+    sendCommandAndWait,
     requestCacheStatus,
     toggleDataCaching,
     cacheAllData,

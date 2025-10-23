@@ -24,5 +24,3 @@ export const EVENTS = {
     NUKE_DATA_COMPLETE: 'NUKE_DATA_COMPLETE'
 };
 
-// Broadcast channel name
-export const CHANNEL_NAME = 'pwa-events';
