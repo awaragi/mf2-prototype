@@ -1,4 +1,4 @@
-import '../assets/thirdparty/dexie.js';
+import '../assets/third-party/dexie.js';
 import { DB_NAME, DB_VERSION, STORES, META_KEYS, DEFAULT_SETTINGS, ASSET_DEFAULTS } from './constants.js';
 import {logger} from '../js-common/utils/logging.js';
 
