@@ -80,6 +80,16 @@ self.addEventListener('install', event => {
         setMessageCallback(broadcastToPages);
         // Set broadcast function in command handlers
         setBroadcastFunction(broadcastToPages);
+
+        // Initialize data cache engine if enabled
+        logger.debug(logPrefix, 'Initializing data cache engine during install...');
+        try {
+            await initializeEngine();
+            logger.debug(logPrefix, 'Data cache engine initialization complete during install');
+        } catch (error) {
+            logger.error(logPrefix, 'Data cache engine initialization failed during install:', error);
+        }
+
         await self.skipWaiting();
         logger.log(logPrefix, 'Service worker installed');
     })());
@@ -92,10 +102,10 @@ self.addEventListener('activate', event => {
             await cleanupOldAppCaches();
             await self.clients.claim();
 
-            // Initialize data cache engine if enabled
-            logger.debug(logPrefix, 'Initializing data cache engine...');
+            // Re-initialize data cache engine if enabled (in case it wasn't started during install)
+            logger.debug(logPrefix, 'Re-initializing data cache engine during activate...');
             await initializeEngine();
-            logger.debug(logPrefix, 'Data cache engine initialization complete');
+            logger.debug(logPrefix, 'Data cache engine re-initialization complete during activate');
 
             logger.log(logPrefix, 'Service worker activated');
         } catch (error) {
