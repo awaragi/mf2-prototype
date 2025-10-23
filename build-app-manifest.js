@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { APP_CACHE } = require('./app-manifest.js');
 
 const MANIFEST_FILE = './app-manifest.js';
 
@@ -20,25 +21,7 @@ function calculateHash(filePath) {
 // Parse app-manifest.js to extract file paths
 function parseManifest() {
     try {
-        const manifestContent = fs.readFileSync(MANIFEST_FILE, 'utf8');
-        const cacheMatch = manifestContent.match(/export const APP_CACHE = ({[\s\S]*?});?/);
-
-        if (!cacheMatch) {
-            throw new Error('Could not find APP_CACHE object in manifest file');
-        }
-
-        // Extract file paths from the object
-        const cacheObject = cacheMatch[1];
-        const pathMatches = cacheObject.match(/"([^"]+)":\s*"[^"]+"/g);
-
-        if (!pathMatches) {
-            throw new Error('Could not parse file paths from APP_CACHE');
-        }
-
-        return pathMatches.map(match => {
-            const pathMatch = match.match(/"([^"]+)":/);
-            return pathMatch ? pathMatch[1] : null;
-        }).filter(Boolean);
+        return Object.keys(APP_CACHE);
     } catch (error) {
         console.error('Error parsing manifest:', error.message);
         return [];
@@ -48,13 +31,16 @@ function parseManifest() {
 // Update hash for a specific file in the manifest
 function updateFileHash(filePath, newHash) {
     try {
-        let manifestContent = fs.readFileSync(MANIFEST_FILE, 'utf8');
+        if (APP_CACHE.hasOwnProperty(filePath)) {
+            APP_CACHE[filePath] = newHash;
 
-        // Create regex to match the specific file path and its hash
-        const regex = new RegExp(`("${filePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}":\\s*)"[^"]+"`);
+            // Write the updated manifest back to file
+            const manifestContent = `export const APP_CACHE = {\n${
+                Object.entries(APP_CACHE)
+                    .map(([filePath, hash]) => `    "${filePath}": "${hash}"`)
+                    .join(',\n')
+            }\n}`;
 
-        if (regex.test(manifestContent)) {
-            manifestContent = manifestContent.replace(regex, `$1"${newHash}"`);
             fs.writeFileSync(MANIFEST_FILE, manifestContent, 'utf8');
             console.log(`✓ Updated hash for ${filePath}: ${newHash}`);
         } else {
@@ -94,7 +80,6 @@ function rebuildManifest() {
     console.log();
 
     // Calculate fresh hashes for all files
-    const updatedCache = {};
     let processedCount = 0;
 
     filePaths.forEach(filePath => {
@@ -103,7 +88,7 @@ function rebuildManifest() {
         const resolvedPath = path.resolve(relativePath);
 
         const newHash = calculateHash(resolvedPath);
-        updatedCache[filePath] = newHash;
+        APP_CACHE[filePath] = newHash;
 
         console.log(`✓ ${filePath}: ${newHash}`);
         processedCount++;
@@ -111,8 +96,8 @@ function rebuildManifest() {
 
     // Generate new manifest content
     const manifestContent = `export const APP_CACHE = {\n${
-        Object.entries(updatedCache)
-            .map(([filePath, hash]) => `  "${filePath}": "${hash}"`)
+        Object.entries(APP_CACHE)
+            .map(([filePath, hash]) => `    "${filePath}": "${hash}"`)
             .join(',\n')
     }\n}`;
 
