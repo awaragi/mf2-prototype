@@ -40,10 +40,16 @@ function initIndexPWA() {
     updateCacheStatus(currentCacheState);
 
     // Always request current cache status from service worker
-    setTimeout(() => {
+    setTimeout(async () => {
         console.log(logPrefix, 'Requesting current cache status from service worker');
-        requestCacheStatus();
-    }, 100); // Small delay to ensure PWA is initialized
+        try {
+            await requestCacheStatus();
+        } catch (error) {
+            console.warn(logPrefix, 'Failed to get initial cache status:', error.message);
+            // Set a fallback status if service worker isn't ready
+            updateCacheStatus({ enabled: false, state: 'off' });
+        }
+    }, 500); // Increased delay to allow PWA initialization
 }
 
 /**

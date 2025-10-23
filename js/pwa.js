@@ -114,40 +114,82 @@ function sendCommand(command, payload = {}) {
 }
 
 /**
+ * Wait for service worker to be ready and in control
+ * @param {number} maxWaitTime - Maximum time to wait in milliseconds
+ * @returns {Promise<ServiceWorker>} The controlling service worker
+ */
+function waitForServiceWorkerControl(maxWaitTime = 5000) {
+    return new Promise((resolve, reject) => {
+        // If already controlling, resolve immediately
+        if (navigator.serviceWorker.controller) {
+            resolve(navigator.serviceWorker.controller);
+            return;
+        }
+
+        let timeoutId;
+        let resolved = false;
+
+        const checkController = () => {
+            if (resolved) return;
+
+            if (navigator.serviceWorker.controller) {
+                resolved = true;
+                clearTimeout(timeoutId);
+                resolve(navigator.serviceWorker.controller);
+            }
+        };
+
+        // Set up timeout
+        timeoutId = setTimeout(() => {
+            if (resolved) return;
+            resolved = true;
+            reject(new Error('Timeout waiting for service worker control'));
+        }, maxWaitTime);
+
+        // Listen for controller changes
+        const handleControllerChange = () => {
+            checkController();
+            if (resolved) {
+                navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+            }
+        };
+        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+        // Wait for service worker to be ready, then check for controller
+        navigator.serviceWorker.ready.then(() => {
+            checkController();
+
+            // If still no controller, the SW might need to claim clients
+            if (!resolved && !navigator.serviceWorker.controller) {
+                // Wait a bit more for the SW to claim control
+                setTimeout(checkController, 100);
+            }
+        }).catch(reject);
+    });
+}
+
+/**
  * Send command to service worker and wait for response
  * @param {string} command - Command type from COMMANDS
  * @param {Object} payload - Command payload
  * @returns {Promise<any>} Response from service worker
  */
-function sendCommandAndWait(command, payload = {}) {
-    return new Promise((resolve, reject) => {
-        const post = () => {
-            const ctrl = navigator.serviceWorker.controller;
-            if (!ctrl) {
-                reject(new Error('No Service Worker controller'));
-                return;
-            }
+async function sendCommandAndWait(command, payload = {}) {
+    try {
+        // Wait for service worker to be in control
+        const ctrl = await waitForServiceWorkerControl();
 
+        return new Promise((resolve, reject) => {
             const mc = new MessageChannel();
             mc.port1.onmessage = (event) => resolve(event.data);
             mc.port1.onmessageerror = reject;
 
             logger.debug(logPrefix, 'User requested (await):', command);
             ctrl.postMessage({ type: command, payload }, [mc.port2]);
-        };
-
-        if (navigator.serviceWorker.controller) {
-            post();
-        } else {
-            navigator.serviceWorker.ready.then(() => {
-                if (navigator.serviceWorker.controller) {
-                    post();
-                } else {
-                    reject(new Error('Service Worker not controlling this page yet'));
-                }
-            });
-        }
-    });
+        });
+    } catch (error) {
+        throw new Error(`Service Worker not controlling this page yet: ${error.message}`);
+    }
 }
 
 /**
