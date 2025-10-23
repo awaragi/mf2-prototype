@@ -43,7 +43,8 @@ function initIndexPWA() {
     setTimeout(async () => {
         console.log(logPrefix, 'Requesting current cache status from service worker');
         try {
-            await requestCacheStatus();
+            currentCacheState = await requestCacheStatus();
+            updateCacheStatus(currentCacheState);
         } catch (error) {
             console.warn(logPrefix, 'Failed to get initial cache status:', error.message);
             // Set a fallback status if service worker isn't ready
@@ -96,15 +97,29 @@ function handleCacheToggle() {
 function updateCacheStatus(status) {
     console.debug(logPrefix, 'Updating cache status:', status);
 
-    // Handle both direct state updates and service worker payload format
-    if (status.dataCaching) {
+    // Handle service worker payload format { app, data }
+    if (status.data) {
         // Service worker payload format
+        const isActive = status.data.state === 'active';
+        const progress = status.data.progress ? status.data.progress.overall : 0;
+
+        let state = 'off';
+        if (isActive) {
+            if (progress >= 100) {
+                state = 'full';
+            } else if (progress > 0) {
+                state = 'partial';
+            } else {
+                state = 'partial'; // Active but no progress yet means starting/partial
+            }
+        }
+
         currentCacheState = {
-            enabled: status.dataCaching.enabled || false,
-            state: status.dataCaching.state || 'off'
+            enabled: isActive,
+            state: state
         };
     } else if (status.enabled !== undefined) {
-        // Direct state format
+        // Direct state format (for backward compatibility)
         currentCacheState = {
             enabled: status.enabled,
             state: status.state || 'off'
