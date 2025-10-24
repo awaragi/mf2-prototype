@@ -2,6 +2,7 @@
 
 import { toggleDataCaching, requestCacheStatus } from './pwa.js';
 import { EVENTS } from '../js-common/events.js';
+import {logger} from "../js-common/utils/logging";
 
 const logPrefix = '[INDEX-PWA]';
 
@@ -19,14 +20,14 @@ let currentCacheState = {
  * Initialize PWA controls for index page
  */
 function initIndexPWA() {
-    console.log(logPrefix, 'Initializing index PWA controls');
+    logger.log(logPrefix, 'Initializing index PWA controls');
 
     // Get DOM elements
     cacheStatusElement = document.getElementById('cache-status');
     cacheToggleButton = document.getElementById('cache-toggle');
 
     if (!cacheStatusElement || !cacheToggleButton) {
-        console.warn(logPrefix, 'Cache control elements not found');
+        logger.warn(logPrefix, 'Cache control elements not found');
         return;
     }
 
@@ -41,12 +42,12 @@ function initIndexPWA() {
 
     // Always request current cache status from service worker
     setTimeout(async () => {
-        console.log(logPrefix, 'Requesting current cache status from service worker');
+        logger.log(logPrefix, 'Requesting current cache status from service worker');
         try {
             currentCacheState = await requestCacheStatus();
             updateCacheStatus(currentCacheState);
         } catch (error) {
-            console.warn(logPrefix, 'Failed to get initial cache status:', error.message);
+            logger.warn(logPrefix, 'Failed to get initial cache status:', error.message);
             // Set a fallback status if service worker isn't ready
             updateCacheStatus({ enabled: false, state: 'off' });
         }
@@ -66,14 +67,14 @@ function initServiceWorkerMessaging() {
         }
     });
 
-    console.log(logPrefix, 'Service Worker messaging initialized for status updates');
+    logger.log(logPrefix, 'Service Worker messaging initialized for status updates');
 }
 
 /**
  * Handle cache toggle button click
  */
 function handleCacheToggle() {
-    console.log(logPrefix, 'Cache toggle clicked, current state:', currentCacheState);
+    logger.log(logPrefix, 'Cache toggle clicked, current state:', currentCacheState);
 
     // Disable button during toggle
     cacheToggleButton.disabled = true;
@@ -95,7 +96,7 @@ function handleCacheToggle() {
  * Update cache status display
  */
 function updateCacheStatus(status) {
-    console.debug(logPrefix, 'Updating cache status:', status);
+    logger.debug(logPrefix, 'Updating cache status:', status);
 
     // Handle service worker payload format { app, data }
     if (status.data) {
