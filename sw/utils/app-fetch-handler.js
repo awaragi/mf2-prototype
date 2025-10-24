@@ -1,9 +1,11 @@
 import {logger} from "../../js-common/utils/logging.js";
+import {getAsset} from "../../js-common/db/content-db.js";
 
 const logPrefix = '[SW-FETCH]';
 
 /**
- * Handle requests with app cache-first strategy
+ * Handle requests with content-from-IDB first (allowlisted),
+ * then app cache, then network.
  * @returns {Promise<Response>} The response
  * @param event
  */
@@ -12,7 +14,27 @@ export async function handleAppCacheRequest(event) {
 
     const startTime = performance.now();
     try {
-        // Try to find in cache first (more efficient approach)
+        // 1) Content cache via IndexedDB (attachments and other allowed paths)
+        if (shouldServeFromIDB(pathname, request)) {
+            const asset = await getAsset(pathname.startsWith('/') ? pathname.slice(1) : pathname);
+            // Also try absolute pathname (without slicing) and full URL as keys if first miss
+            const asset2 = asset || await getAsset(pathname) || await getAsset(new URL(request.url).pathname);
+            const hit = asset2;
+            if (hit && hit.blob) {
+                const headers = new Headers({
+                    'Content-Type': hit.type || 'application/octet-stream',
+                    'Content-Length': hit.size != null ? String(hit.size) : undefined,
+                    'X-Served-From': 'idb'
+                });
+                // Remove undefined headers
+                for (const [k,v] of [...headers.entries()]) { if (v === undefined) headers.delete(k); }
+                const duration = Math.round(performance.now() - startTime);
+                logger.debug(logPrefix, 'IDB content hit:', pathname, `(${duration}ms)`);
+                return new Response(hit.blob, { status: 200, headers });
+            }
+        }
+
+        // 2) Try to find in app cache (precache) next
         let cachedResponse;
 
         // check all caches for original request
@@ -29,8 +51,8 @@ export async function handleAppCacheRequest(event) {
             return cachedResponse;
         }
 
-        // If not in app cache, fetch from network
-        logger.log(logPrefix, 'App cache miss, fetching:', pathname);
+        // 3) If not in app cache, fetch from network
+        logger.log(logPrefix, 'Cache miss, fetching network:', pathname);
         const response = await fetch(request);
         const duration = Math.round(performance.now() - startTime);
 
@@ -79,6 +101,19 @@ export async function handleAppCacheRequest(event) {
 }
 
 /**
+ * Decide if a request should be served from IDB content cache.
+ * Very small allowlist for the POC: /attachments/*
+ * @param {string} pathname
+ * @param {Request} request
+ * @returns {boolean}
+ */
+function shouldServeFromIDB(pathname, request) {
+    if (request.method !== 'GET') return false;
+    // Only same-origin attachments for now
+    return pathname.startsWith('/attachments/');
+}
+
+/**
  * Extract request details from the event
  * @param event
  */
@@ -94,8 +129,8 @@ function extractRequest(event) {
         pathname = '/index.html';
     }
 
-    // Normalize paths
-    if (pathname.endsWith('/')) {
+    // Normalize paths (but keep attachments paths untouched)
+    if (pathname.endsWith('/') && !pathname.startsWith('/attachments/')) {
         pathname = pathname + 'index.html';
     }
 
