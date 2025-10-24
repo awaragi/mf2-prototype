@@ -2,6 +2,8 @@
 
 import { putAsset, clearAllAssets } from '../js-common/db/content-db.js';
 
+const content = '/api/slides.json';
+
 const statusEl = document.getElementById('status');
 const netEl = document.getElementById('net-indicator');
 const btnLoadAll = document.getElementById('btn-load-all');
@@ -23,8 +25,8 @@ window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 
 async function loadSlidesList() {
-  const res = await fetch('/api/slides.json', { cache: 'no-cache' });
-  if (!res.ok) throw new Error('Failed to fetch slides.json: ' + res.status);
+    const res = await fetch(content, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`Failed to fetch ${content}: ${res.status}`);
   return res.json();
 }
 
@@ -52,9 +54,13 @@ function extractImageUrls(slidesData) {
   return [...urls];
 }
 
+function normalizeKey(url) {
+    return url.startsWith('/') ? url.slice(1) : url;
+}
+
 async function fetchAndStore(url) {
   // Normalize to absolute path key used by SW lookups
-  const key = url.startsWith('/') ? url.slice(1) : url;
+  const key = normalizeKey(url);
   setStatus(`Fetching ${url} ...`);
   const res = await fetch(url, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`Failed ${url}: ${res.status}`);
@@ -70,8 +76,9 @@ async function handleLoadAll() {
     btnLoadAll.disabled = true;
     const data = await loadSlidesList();
     const urls = extractImageUrls(data);
+    urls.push(normalizeKey(content));
     if (urls.length === 0) {
-      setStatus('No image URLs found in slides.json');
+      setStatus(`No image URLs found in ${content}.`);
       return;
     }
     setStatus(`Found ${urls.length} assets. Downloading...`);
