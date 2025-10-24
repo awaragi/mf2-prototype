@@ -22,6 +22,14 @@
     <link rel="manifest" href="/sw/manifest.webmanifest">
 </head>
 <body class="presentations">
+    <!-- Navigation section with offline button and status indicator -->
+    <nav class="d-flex justify-content-between align-items-center p-2 bg-secondary">
+        <button id="btn-offline" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-download"></i> Offline Content
+        </button>
+        <div id="net-indicator" class="badge text-bg-secondary">Checking...</div>
+    </nav>
+
     <!-- Header with cache controls -->
     <header class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
         <h1 class="text-bg-info m-0">Available Presentations</h1>
@@ -41,6 +49,5 @@
 
     <script type="module" src="/js/app-index.js" defer></script>
     <script type="module" src="/js/pwa.js" defer></script>
-    <script type="module" src="/js/app-index-pwa.js" defer></script>
 </body>
 </html>

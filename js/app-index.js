@@ -49,5 +49,35 @@ async function generatePresentationsList() {
     console.log(`[INDEX] Loaded ${presentations.length} presentations`);
 }
 
+// Online/offline indicator functionality
+function updateOnlineStatus() {
+    const online = navigator.onLine;
+    const netEl = document.getElementById('net-indicator');
+    if (netEl) {
+        netEl.className = 'badge ' + (online ? 'text-bg-success' : 'text-bg-secondary');
+        netEl.textContent = online ? 'Online' : 'Offline';
+    }
+}
+
+// Button to open offline.html page
+function initOfflineButton() {
+    const btnOffline = document.getElementById('btn-offline');
+    if (btnOffline) {
+        btnOffline.addEventListener('click', () => {
+            window.location.href = 'offline.html';
+        });
+    }
+}
+
+function initNavigation() {
+    updateOnlineStatus();
+    initOfflineButton();
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+}
+
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', generatePresentationsList);
+document.addEventListener('DOMContentLoaded', () => {
+    generatePresentationsList();
+    initNavigation();
+});

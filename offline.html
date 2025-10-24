@@ -8,13 +8,21 @@
   <link rel="stylesheet" href="/assets/third-party/bootstrap-icons.css">
   <link rel="icon" href="/favicon.ico">
 </head>
-<body class="p-3">
-  <header class="mb-4 d-flex align-items-center justify-content-between">
-    <h1 class="h3 mb-0">Offline Content (POC)</h1>
+<body>
+  <!-- Navigation section with logo and status indicator -->
+  <nav class="d-flex justify-content-between align-items-center p-2 bg-secondary">
+    <div class="d-flex align-items-center">
+      <img src="assets/cgi-logo.png" alt="CGI Logo" class="me-2" style="height: 24px; cursor: pointer;" onclick="window.location.href='index.html';">
+    </div>
     <div id="net-indicator" class="badge text-bg-secondary">Checking...</div>
+  </nav>
+
+  <!-- Header with cache controls -->
+  <header class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
+    <h1 class="text-bg-info m-0">Offline Content (POC)</h1>
   </header>
 
-  <main class="container">
+  <main class="container p-3">
     <div class="mb-3">
       <button id="btn-load-all" class="btn btn-primary me-2">
         <i class="bi bi-download me-1"></i> Load All Presentations
