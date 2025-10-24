@@ -1,17 +1,6 @@
 import {logger} from '../js-common/utils/logging.js';
 import {cleanupOldAppCaches, initCache} from './utils/app-cache-manager.js';
 import {handleAppCacheRequest} from "./utils/app-fetch-handler.js";
-import {COMMANDS} from '../js-common/events.js';
-import {
-    handleActivateDataCaching,
-    handleDeactivateDataCaching,
-    getCurrentStatus,
-    handleCacheDataAll,
-    handleCacheDataPresentation,
-    handleNukeData,
-    setBroadcastFunction
-} from './handlers/command-handlers.js';
-import { initializeEngine, setMessageCallback } from './data-cache-engine.js';
 
 const logPrefix = '[SW]';
 
@@ -26,70 +15,10 @@ async function broadcastToPages(message) {
     }
 }
 
-// Handle incoming messages from pages
-self.addEventListener('message', async (event) => {
-    const port = event.ports?.[0] || null;
-    const { type, payload } = event.data || {};
-
-    logger.debug(logPrefix, 'CMD:', type, payload);
-
-    try {
-        switch (type) {
-            case COMMANDS.CACHE_STATUS:
-                const status = await getCurrentStatus();
-                port?.postMessage({ ok: true, status });
-                await broadcastToPages({ type: 'STATUS', payload: status });
-                break;
-
-            case COMMANDS.ACTIVATE_DATA_CACHING:
-                await handleActivateDataCaching(payload);
-                break;
-
-            case COMMANDS.DEACTIVATE_DATA_CACHING:
-                await handleDeactivateDataCaching(payload);
-                break;
-
-            case COMMANDS.CACHE_DATA_ALL:
-                await handleCacheDataAll(payload);
-                break;
-
-            case COMMANDS.CACHE_DATA_PRESENTATION:
-                await handleCacheDataPresentation(payload);
-                break;
-
-            case COMMANDS.NUKE_DATA:
-                await handleNukeData(payload);
-                break;
-
-            default:
-                logger.debug(logPrefix, 'Unknown command type:', type);
-                port?.postMessage({ ok: false, error: 'Unknown command' });
-                break;
-        }
-    } catch (error) {
-        logger.error(logPrefix, 'Command handler error:', error);
-        port?.postMessage({ ok: false, error: String(error) });
-    }
-});
-
 self.addEventListener('install', event => {
     logger.debug(logPrefix, 'Installing service worker');
     event.waitUntil((async () => {
         await initCache();
-        // Set up data cache engine to broadcast messages to pages
-        setMessageCallback(broadcastToPages);
-        // Set broadcast function in command handlers
-        setBroadcastFunction(broadcastToPages);
-
-        // Initialize data cache engine if enabled
-        logger.debug(logPrefix, 'Initializing data cache engine during install...');
-        try {
-            await initializeEngine();
-            logger.debug(logPrefix, 'Data cache engine initialization complete during install');
-        } catch (error) {
-            logger.error(logPrefix, 'Data cache engine initialization failed during install:', error);
-        }
-
         await self.skipWaiting();
         logger.log(logPrefix, 'Service worker installed');
     })());
@@ -101,12 +30,6 @@ self.addEventListener('activate', event => {
         try {
             await cleanupOldAppCaches();
             await self.clients.claim();
-
-            // Re-initialize data cache engine if enabled (in case it wasn't started during install)
-            logger.debug(logPrefix, 'Re-initializing data cache engine during activate...');
-            await initializeEngine();
-            logger.debug(logPrefix, 'Data cache engine re-initialization complete during activate');
-
             logger.log(logPrefix, 'Service worker activated');
         } catch (error) {
             logger.error(logPrefix, 'Service worker activation failed:', error);
