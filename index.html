@@ -22,13 +22,26 @@
     <link rel="manifest" href="/sw/manifest.webmanifest">
 </head>
 <body class="presentations">
-    <!-- Navigation section with offline button and status indicator -->
-    <nav class="d-flex justify-content-between align-items-center p-2 bg-secondary">
-        <button id="btn-offline" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-download"></i> Offline Content
-        </button>
-        <div id="net-indicator" class="badge text-bg-secondary">Checking...</div>
-    </nav>
+    <!-- App Navbar (same structure as present.html) -->
+    <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
+        <div class="container-fluid">
+            <!-- Logo and title area -->
+            <div class="navbar-brand d-flex align-items-center" id="logo-area" style="cursor: pointer;" onclick="window.location.href='index.html'">
+                <img src="assets/cgi-logo.png" alt="CGI Logo" id="cgi-logo" class="me-2">
+                <span id="current-title">Presentations</span>
+            </div>
+
+            <!-- Right-side actions -->
+            <div class="d-flex align-items-center">
+                <!-- Offline content link -->
+                <a href="/offline.html" class="btn btn-outline-secondary me-2" id="btn-offline-page" aria-label="Open offline content page">
+                    <i class="bi bi-download"></i>
+                </a>
+                <!-- Network status indicator -->
+                <span class="ms-1" data-network-indicator title="Network status" aria-live="polite"></span>
+            </div>
+        </div>
+    </header>
 
     <!-- Header with cache controls -->
     <header class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">

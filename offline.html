@@ -9,17 +9,21 @@
   <link rel="icon" href="/favicon.ico">
 </head>
 <body>
-  <!-- Navigation section with logo and status indicator -->
-  <nav class="d-flex justify-content-between align-items-center p-2 bg-secondary">
-    <div class="d-flex align-items-center">
-      <img src="assets/cgi-logo.png" alt="CGI Logo" class="me-2" style="height: 24px; cursor: pointer;" onclick="window.location.href='index.html';">
-    </div>
-    <div id="net-indicator" class="badge text-bg-secondary">Checking...</div>
-  </nav>
+  <!-- App Navbar (same structure as present.html) -->
+  <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
+    <div class="container-fluid">
+      <!-- Logo and title area -->
+      <div class="navbar-brand d-flex align-items-center" id="logo-area" style="cursor: pointer;" onclick="window.location.href='index.html'">
+        <img src="assets/cgi-logo.png" alt="CGI Logo" id="cgi-logo" class="me-2">
+        <span id="current-title">Offline Content</span>
+      </div>
 
-  <!-- Header with cache controls -->
-  <header class="d-flex justify-content-between align-items-center p-3 bg-light border-bottom">
-    <h1 class="text-bg-info m-0">Offline Content (POC)</h1>
+      <!-- Right-side actions -->
+      <div class="d-flex align-items-center">
+        <!-- Network status indicator only -->
+        <span class="ms-1" data-network-indicator title="Network status" aria-live="polite"></span>
+      </div>
+    </div>
   </header>
 
   <main class="container p-3">

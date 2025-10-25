@@ -8,6 +8,18 @@ const logPrefix = '[PWA]';
 // PWA state variables
 let registration = null;
 
+// UI: network status indicator helper
+function updateNetworkIndicators(isOnline) {
+    const nodes = document.querySelectorAll('[data-network-indicator]');
+    nodes.forEach(node => {
+        const icon = isOnline ? 'bi-wifi' : 'bi-wifi-off';
+        const label = isOnline ? 'Online' : 'Offline';
+        node.innerHTML = `<i class="bi ${icon}"></i>`;
+        node.setAttribute('title', label);
+        node.setAttribute('aria-label', `Network status: ${label}`);
+    });
+}
+
 /**
  * Initialize PWA functionality
  * @returns {Promise<void>}
@@ -15,6 +27,18 @@ let registration = null;
 async function initPWA() {
     logger.debug(logPrefix, 'Initializing PWA Controller');
     await registerServiceWorker();
+
+    // Network UI: reflect initial status and subscribe to changes
+    updateNetworkIndicators(navigator.onLine);
+    window.addEventListener('online', () => updateNetworkIndicators(true));
+    window.addEventListener('offline', () => updateNetworkIndicators(false));
+    window.addEventListener('networkchange', (e) => {
+        try {
+            updateNetworkIndicators(!!e.detail?.isOnline);
+        } catch (err) {
+            // no-op
+        }
+    });
 }
 
 /**
