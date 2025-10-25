@@ -6,17 +6,20 @@
     <title>Presentation</title>
 
     <!-- PWA meta tags for iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Presentation">
 
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/third-party/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/assets/third-party/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- SW/PWA manifest -->
+    <link rel="manifest" href="/sw/manifest.webmanifest">
 </head>
 <body>
     <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
@@ -38,7 +41,7 @@
                 </button>
 
                 <!-- Hamburger menu dropdown -->
-                <div class="dropdown">
+                <div class="dropdown me-2">
                     <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="btn-menu" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu">
                         <i class="bi bi-list"></i>
                     </button>
@@ -56,6 +59,13 @@
                         <li><button class="dropdown-item" type="button" id="btn-about">About</button></li>
                     </ul>
                 </div>
+
+                <!-- Offline content link -->
+                <a href="/offline.html" class="btn btn-outline-secondary me-2" id="btn-offline-page" aria-label="Open offline content page">
+                    <i class="bi bi-download"></i>
+                </a>
+                <!-- Network status indicator -->
+                <span class="ms-1" data-network-indicator title="Network status" aria-live="polite"></span>
             </div>
         </div>
     </header>
@@ -117,9 +127,10 @@
     </dialog>
 
     <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/third-party/bootstrap.bundle.min.js"></script>
 
     <!-- Custom scripts -->
     <script src="js/app-present.js" type="module" defer></script>
+    <script type="module" src="/js/pwa.js" defer></script>
 </body>
 </html>

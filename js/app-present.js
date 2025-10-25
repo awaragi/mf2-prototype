@@ -50,7 +50,7 @@ async function loadPresentationData() {
     disableAllInteractions();
 
     try {
-        console.log('Loading presentation data from /api/slides.json...');
+        console.log('[PRESENT] Loading presentation data from /api/slides.json...');
         const response = await fetch('/api/slides.json');
 
         if (!response.ok) {
@@ -69,7 +69,7 @@ async function loadPresentationData() {
         isDataLoaded = true;
         isDataLoading = false;
 
-        console.log(`Loaded ${presentations.length} presentations from server`);
+        console.log(`[PRESENT] Loaded ${presentations.length} presentations from server`);
 
         // Hide loading and enable interactions
         showDataLoading(false);
@@ -79,7 +79,7 @@ async function loadPresentationData() {
         initializePresentationFeatures();
 
     } catch (error) {
-        console.error('Failed to load presentation data:', error);
+        console.error('[PRESENT] Failed to load presentation data:', error);
         isDataLoading = false;
         showDataLoadingError(error.message);
     }
@@ -95,7 +95,7 @@ function initializePresentationFeatures() {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Presentation app initialized');
+    console.log('[PRESENT] Presentation app initialized');
     initializeHeader();
     initializeStage();
     initializeNavigation();
@@ -117,7 +117,7 @@ function initializeHeader() {
         logoArea.addEventListener('click', function(e) {
             e.preventDefault();
             location.href = '/';
-            console.log('Logo clicked - going back to main page');
+            console.log('[PRESENT] Logo clicked - going back to main page');
         });
     }
 
@@ -148,12 +148,12 @@ function initializeHeader() {
     if (menuButton) {
         menuButton.addEventListener('shown.bs.dropdown', function() {
             isMenuOpen = true;
-            console.log('Menu opened - pausing auto-hide');
+            console.log('[PRESENT] Menu opened - pausing auto-hide');
         });
 
         menuButton.addEventListener('hidden.bs.dropdown', function() {
             isMenuOpen = false;
-            console.log('Menu closed - resuming auto-hide');
+            console.log('[PRESENT] Menu closed - resuming auto-hide');
             resetAutoHideTimer();
         });
     }
@@ -183,13 +183,13 @@ function initializeOverview() {
     // Add scroll listener for positioning when additional content is present
     window.addEventListener('scroll', debounce(updateOverviewPosition, 100));
 
-    console.log('Overview initialized');
+    console.log('[PRESENT] Overview initialized');
 }
 
 function toggleOverview() {
     // Don't show overview if data is not loaded
     if (!isDataLoaded) {
-        console.log('Data not loaded yet, skipping overview toggle');
+        console.log('[PRESENT] Data not loaded yet, skipping overview toggle');
         return;
     }
 
@@ -202,10 +202,10 @@ function toggleOverview() {
         overviewElement.classList.add('visible');
         updateActiveOverviewThumbnail();
         updateOverviewPosition();
-        console.log('Overview shown - pausing auto-hide');
+        console.log('[PRESENT] Overview shown - pausing auto-hide');
     } else {
         overviewElement.classList.remove('visible');
-        console.log('Overview hidden - resuming auto-hide');
+        console.log('[PRESENT] Overview hidden - resuming auto-hide');
         resetAutoHideTimer();
     }
 }
@@ -216,7 +216,7 @@ function generateOverviewThumbnails() {
 
     // Don't generate if data is not loaded
     if (!isDataLoaded) {
-        console.log('Data not loaded yet, skipping thumbnail generation');
+        console.log('[PRESENT] Data not loaded yet, skipping thumbnail generation');
         return;
     }
 
@@ -261,7 +261,7 @@ function generateOverviewThumbnails() {
         thumbnailsContainer.appendChild(thumbnail);
     });
 
-    console.log(`Generated ${slides.length} overview thumbnails for presentation: ${presentations[currentPresentationIndex].title}`);
+    console.log(`[PRESENT] Generated ${slides.length} overview thumbnails for presentation: ${presentations[currentPresentationIndex].title}`);
 }
 
 function updateActiveOverviewThumbnail() {
@@ -316,7 +316,7 @@ function initializeStage() {
     stageWrapElement = document.getElementById('stage-wrap');
 
     if (!stageElement || !stageWrapElement) {
-        console.error('Stage elements not found');
+        console.error('[PRESENT] Stage elements not found');
         return;
     }
 
@@ -334,7 +334,7 @@ function initializeStage() {
         }, 200);
     });
 
-    console.log('Stage initialized with scaling');
+    console.log('[PRESENT] Stage initialized with scaling');
 }
 
 function calculateStageScale() {
@@ -397,7 +397,7 @@ function calculateStageScale() {
             });
         }
 
-        console.log(`Stage scaled to ${stageWidth}x${stageHeight} (scale: ${currentScale.toFixed(3)})`);
+        console.log(`[PRESENT] Stage scaled to ${stageWidth}x${stageHeight} (scale: ${currentScale.toFixed(3)})`);
     });
 }
 
@@ -434,7 +434,7 @@ function updateAdditionalContentWidth() {
 
     if (Math.abs(currentWidth - newWidth) > 1) {
         additionalContent.style.width = `${newWidth}px`;
-        console.log(`Additional content width updated to ${newWidth}px`);
+        console.log(`[PRESENT] Additional content width updated to ${newWidth}px`);
     }
 }
 
@@ -442,18 +442,18 @@ function updateAdditionalContentWidth() {
 function startProgressivePreload() {
     // Don't preload if data is not loaded
     if (!isDataLoaded) {
-        console.log('Data not loaded yet, skipping preload');
+        console.log('[PRESENT] Data not loaded yet, skipping preload');
         return;
     }
 
-    console.log('Starting progressive preload...');
+    console.log('[PRESENT] Starting progressive preload...');
     preloadProgress = 0;
 
     const imageSlides = slides.filter(slide => slide.template === 'img');
     const totalImages = imageSlides.length;
 
     if (totalImages === 0) {
-        console.log('No images to preload for current presentation');
+        console.log('[PRESENT] No images to preload for current presentation');
         return;
     }
 
@@ -465,9 +465,9 @@ function startProgressivePreload() {
             preloadImage(slide).then(() => {
                 loadedCount++;
                 preloadProgress = loadedCount;
-                console.log(`Preloaded ${loadedCount} / ${totalImages} for presentation: ${presentations[currentPresentationIndex].title}`);
+                console.log(`[PRESENT] Preloaded ${loadedCount} / ${totalImages} for presentation: ${presentations[currentPresentationIndex].title}`);
             }).catch((error) => {
-                console.warn(`Failed to preload image for slide ${slide.id}:`, error);
+                console.warn(`[PRESENT] Failed to preload image for slide ${slide.id}:`, error);
                 loadedCount++;
                 preloadProgress = loadedCount;
             });
@@ -550,13 +550,13 @@ function initializeNavigationButtons() {
         });
     }
 
-    console.log('Navigation buttons initialized');
+    console.log('[PRESENT] Navigation buttons initialized');
 }
 
 function loadSlideFromHash() {
     // Don't process hash changes if data is not loaded yet
     if (!isDataLoaded) {
-        console.log('Data not loaded yet, skipping hash processing');
+        console.log('[PRESENT] Data not loaded yet, skipping hash processing');
         return;
     }
 
@@ -593,7 +593,7 @@ function loadSlideFromHash() {
     // If hash is invalid, missing, or doesn't contain separator, redirect to first presentation/slide
     if (!isValidHash) {
         if (hash) {
-            console.warn(`Invalid hash format: ${hash}, redirecting to first presentation and slide`);
+            console.warn(`[PRESENT] Invalid hash format: ${hash}, redirecting to first presentation and slide`);
         }
 
         // Redirect to correct hash
@@ -622,7 +622,7 @@ function loadSlideFromHash() {
 function navigateSlide(direction) {
     // Don't navigate if data is not loaded
     if (!isDataLoaded) {
-        console.log('Data not loaded yet, skipping navigation');
+        console.log('[PRESENT] Data not loaded yet, skipping navigation');
         return;
     }
 
@@ -741,7 +741,7 @@ function renderImageSlide(container, slide) {
     if (imageCache.has(slide.id)) {
         const cachedImg = imageCache.get(slide.id);
         img.src = cachedImg.src;
-        console.log(`Using cached image for slide ${slide.id}`);
+        console.log(`[PRESENT] Using cached image for slide ${slide.id}`);
     } else {
         img.src = slide.src;
     }
@@ -880,23 +880,23 @@ function enableAllInteractions() {
 // Fullscreen functionality
 function toggleFullscreen() {
     if (!document.fullscreenEnabled) {
-        console.warn('Fullscreen API not supported');
+        console.warn('[PRESENT] Fullscreen API not supported');
         return;
     }
 
     if (document.fullscreenElement) {
         // Exit fullscreen
         document.exitFullscreen().then(() => {
-            console.log('Exited fullscreen mode');
+            console.log('[PRESENT] Exited fullscreen mode');
         }).catch((error) => {
-            console.error('Error exiting fullscreen:', error);
+            console.error('[PRESENT] Error exiting fullscreen:', error);
         });
     } else {
         // Enter fullscreen
         document.documentElement.requestFullscreen().then(() => {
-            console.log('Entered fullscreen mode');
+            console.log('[PRESENT] Entered fullscreen mode');
         }).catch((error) => {
-            console.error('Error entering fullscreen:', error);
+            console.error('[PRESENT] Error entering fullscreen:', error);
         });
     }
 
@@ -913,7 +913,7 @@ function initializeAboutModal() {
     const closeBtn = document.getElementById('about-modal-close');
 
     if (!modal || !closeBtn) {
-        console.error('About modal elements not found');
+        console.error('[PRESENT] About modal elements not found');
         return;
     }
 
@@ -936,14 +936,14 @@ function initializeAboutModal() {
         }
     });
 
-    console.log('About modal initialized');
+    console.log('[PRESENT] About modal initialized');
 }
 
 function showAboutModal() {
     const modal = document.getElementById('about-modal');
     if (modal) {
         modal.showModal();
-        console.log('About modal opened');
+        console.log('[PRESENT] About modal opened');
 
         // Close the dropdown menu
         const dropdownToggle = bootstrap.Dropdown.getInstance(document.getElementById('btn-menu'));
@@ -957,7 +957,7 @@ function closeAboutModal() {
     const modal = document.getElementById('about-modal');
     if (modal && modal.open) {
         modal.close();
-        console.log('About modal closed');
+        console.log('[PRESENT] About modal closed');
     }
 }
 
@@ -965,7 +965,7 @@ function closeAboutModal() {
 function initializeSwipeGestures() {
     const stageOverlay = document.getElementById('stage-overlay');
     if (!stageOverlay) {
-        console.error('Stage overlay not found for swipe gestures');
+        console.error('[PRESENT] Stage overlay not found for swipe gestures');
         return;
     }
 
@@ -985,13 +985,13 @@ function initializeSwipeGestures() {
         e.preventDefault();
     });
 
-    console.log('Swipe gestures initialized');
+    console.log('[PRESENT] Swipe gestures initialized');
 }
 
 function handlePointerDown(e) {
     // Only handle primary pointer (first finger/main pointer)
     if (!e.isPrimary) {
-        console.log('Ignoring non-primary pointer');
+        console.log('[PRESENT] Ignoring non-primary pointer');
         return;
     }
 
@@ -1059,11 +1059,11 @@ function handlePointerEnd(e) {
         // Determine swipe direction and navigate
         if (deltaX > 0) {
             // Swipe right -> previous slide
-            console.log('Swipe right detected - going to previous slide');
+            console.log('[PRESENT] Swipe right detected - going to previous slide');
             navigateSlide(-1);
         } else {
             // Swipe left -> next slide  
-            console.log('Swipe left detected - going to next slide');
+            console.log('[PRESENT] Swipe left detected - going to next slide');
             navigateSlide(1);
         }
     } else {
@@ -1091,7 +1091,7 @@ function initializeAutoHideNavigation() {
     // Start the initial timer
     resetAutoHideTimer();
 
-    console.log('Auto-hide navigation initialized');
+    console.log('[PRESENT] Auto-hide navigation initialized');
 }
 
 function handleUserActivity() {
@@ -1170,7 +1170,7 @@ function hideNavigationButtons() {
         prevBtn.classList.add('auto-hidden');
         nextBtn.classList.add('auto-hidden');
         areNavigationButtonsVisible = false;
-        console.log('Navigation buttons auto-hidden after inactivity');
+        console.log('[PRESENT] Navigation buttons auto-hidden after inactivity');
     }
 }
 

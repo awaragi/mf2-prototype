@@ -1,0 +1,26 @@
+{
+  "name": "Presentation App",
+  "short_name": "Presentations",
+  "description": "A modern web-based presentation application",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#E31937",
+  "background_color": "#ffffff",
+  "orientation": "landscape-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "education", "presentation"],
+  "lang": "en"
+}
