@@ -10,7 +10,7 @@ export const APP_CACHE = {
     "js/app-offline.js": "c6af580e",
     "js/pwa.js": "34cbc289",
     "js-common/utils/logging.js": "8cb1fdbd",
-    "js-common/db/content-db.js": "48c7f68c",
+    "js-common/db/content-db.js": "24355523",
     "assets/cgi-logo.png": "a40badd6",
     "assets/icons/icon-192x192.png": "8bac32d2",
     "assets/third-party/bootstrap.bundle.min.js": "6baf57f2",

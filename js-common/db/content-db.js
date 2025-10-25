@@ -11,13 +11,8 @@ if (!Dexie) {
 
 // Initialize database and schema
 const db = new Dexie('content-cache');
-// v1: assets only
-// v2: add presentations table for metadata (id, version, title)
 db.version(1).stores({
   // Primary key url, simple indexes for timestamp
-  assets: 'url, ts'
-});
-db.version(2).stores({
   assets: 'url, ts',
   presentations: 'id, ts'
 });
