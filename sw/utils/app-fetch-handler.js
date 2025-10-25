@@ -16,10 +16,9 @@ export async function handleAppCacheRequest(event) {
     try {
         // 1) Content cache via IndexedDB (attachments and other allowed paths)
         if (shouldServeFromIDB(pathname, request)) {
-            const asset = await getAsset(pathname.startsWith('/') ? pathname.slice(1) : pathname);
+            let asset = await getAsset(pathname.startsWith('/') ? pathname.slice(1) : pathname);
             // Also try absolute pathname (without slicing) and full URL as keys if first miss
-            const asset2 = asset || await getAsset(pathname) || await getAsset(new URL(request.url).pathname);
-            const hit = asset2;
+            const hit = asset || await getAsset(pathname) || await getAsset(new URL(request.url).pathname);
             if (hit && hit.blob) {
                 const headers = new Headers({
                     'Content-Type': hit.type || 'application/octet-stream',
@@ -110,7 +109,7 @@ export async function handleAppCacheRequest(event) {
 function shouldServeFromIDB(pathname, request) {
     if (request.method !== 'GET') return false;
     // Only same-origin attachments for now
-    return pathname.startsWith('/attachments/');
+    return ['/attachments/', '/api/'].some(prefix => pathname.startsWith(prefix));
 }
 
 /**
