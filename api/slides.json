@@ -2,7 +2,7 @@
   {
     "id": "strapi-presentation",
     "title": "Strapi Integration Presentation",
-    "version": "1.0",
+    "version": "1.1",
     "slides": [
       {
         "id": "intro",

@@ -51,6 +51,14 @@ export async function putAsset(rec) {
  * @param {string} rec.id
  * @param {string} [rec.version]
  * @param {string} [rec.title]
+ * @param {Array<string>} [rec.expectedUrls]
+ * @param {number} [rec.expectedCount]
+ * @param {number} [rec.cachedCount]
+ * @param {boolean} [rec.cached]
+ * @param {boolean} [rec.pending]
+ * @param {boolean} [rec.stale]
+ * @param {number} [rec.updatedAt]
+ * @param {number} [rec.expiresAt]
  * @returns {Promise<void>}
  */
 export async function putPresentationMeta(rec) {
@@ -61,6 +69,14 @@ export async function putPresentationMeta(rec) {
     id,
     version: rec.version,
     title: rec.title,
+    expectedUrls: rec.expectedUrls || [],
+    expectedCount: rec.expectedCount || 0,
+    cachedCount: rec.cachedCount || 0,
+    cached: rec.cached || false,
+    pending: rec.pending || false,
+    stale: rec.stale || false,
+    updatedAt: rec.updatedAt,
+    expiresAt: rec.expiresAt,
     ts
   });
 }
@@ -81,6 +97,57 @@ export async function getPresentationMeta(id) {
  */
 export async function getAllPresentationMeta() {
   return db.table('presentations').toArray();
+}
+
+/**
+ * Update presentation flags
+ * @param {string} id
+ * @param {Object} flags
+ * @param {boolean} [flags.cached]
+ * @param {boolean} [flags.pending]
+ * @param {boolean} [flags.stale]
+ * @param {number} [flags.cachedCount]
+ * @param {number} [flags.updatedAt]
+ * @returns {Promise<void>}
+ */
+export async function updatePresentationFlags(id, flags) {
+  if (!id) throw new Error('updatePresentationFlags requires id');
+  const updates = {};
+  if (flags.cached !== undefined) updates.cached = flags.cached;
+  if (flags.pending !== undefined) updates.pending = flags.pending;
+  if (flags.stale !== undefined) updates.stale = flags.stale;
+  if (flags.cachedCount !== undefined) updates.cachedCount = flags.cachedCount;
+  if (flags.updatedAt !== undefined) updates.updatedAt = flags.updatedAt;
+
+  await db.table('presentations').update(id, updates);
+}
+
+/**
+ * Get presentations with pending flag set to true
+ * @returns {Promise<Array>}
+ */
+export async function getPendingPresentations() {
+  try {
+    const allPresentations = await db.table('presentations').toArray();
+    return allPresentations.filter(p => p.pending === true);
+  } catch (error) {
+    console.warn('Error getting pending presentations:', error);
+    return [];
+  }
+}
+
+/**
+ * Get count of cached presentations
+ * @returns {Promise<number>}
+ */
+export async function getCachedPresentationCount() {
+  try {
+    const allPresentations = await db.table('presentations').toArray();
+    return allPresentations.filter(p => p.cached === true).length;
+  } catch (error) {
+    console.warn('Error getting cached presentation count:', error);
+    return 0;
+  }
 }
 
 /**
