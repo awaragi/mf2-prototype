@@ -151,6 +151,64 @@ export async function getCachedPresentationCount() {
 }
 
 /**
+ * Get comprehensive cache statistics
+ * @returns {Promise<{cachedPresentations: number, pendingPresentations: number, totalAssets: number, totalSize: number, formattedSize: string}>}
+ */
+export async function getCacheStatistics() {
+  try {
+    const [presentations, assets] = await Promise.all([
+      db.table('presentations').toArray(),
+      db.table('assets').toArray()
+    ]);
+
+    const cachedPresentations = presentations.filter(p => p.cached === true).length;
+    const pendingPresentations = presentations.filter(p => p.pending === true).length;
+    const totalAssets = assets.length;
+
+    // Calculate total size in bytes
+    const totalSize = assets.reduce((sum, asset) => sum + (asset.size || 0), 0);
+
+    // Format size for display
+    const formattedSize = formatBytes(totalSize);
+
+    return {
+      cachedPresentations,
+      pendingPresentations,
+      totalAssets,
+      totalSize,
+      formattedSize
+    };
+  } catch (error) {
+    console.warn('Error getting cache statistics:', error);
+    return {
+      cachedPresentations: 0,
+      pendingPresentations: 0,
+      totalAssets: 0,
+      totalSize: 0,
+      formattedSize: '0 B'
+    };
+  }
+}
+
+/**
+ * Format bytes into human readable string
+ * @param {number} bytes
+ * @param {number} decimals
+ * @returns {string}
+ */
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+/**
  * Get an asset by URL
  * @param {string} url
  * @returns {Promise<null|{url:string, blob:Blob, type:string, size?:number, etag?:string, expiresAt?:number, ts:number}>}

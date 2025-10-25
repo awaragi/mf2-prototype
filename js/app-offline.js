@@ -1,6 +1,6 @@
 // Offline POC client: load image assets from slides.json into IndexedDB via Dexie wrapper
 
-import { putAsset, clearAllAssets, putPresentationMeta, getAllPresentationMeta, updatePresentationFlags, getPendingPresentations, getCachedPresentationCount, getAsset } from '../js-common/db/content-db.js';
+import { putAsset, clearAllAssets, putPresentationMeta, getAllPresentationMeta, updatePresentationFlags, getPendingPresentations, getCachedPresentationCount, getAsset, getCacheStatistics } from '../js-common/db/content-db.js';
 
 const content = '/api/slides.json';
 const DELAY = 1000;
@@ -9,8 +9,48 @@ const statusEl = document.getElementById('status');
 const btnLoadAll = document.getElementById('btn-load-all');
 const btnNuke = document.getElementById('btn-nuke');
 
+// Statistics elements
+const statCached = document.getElementById('stat-cached');
+const statPending = document.getElementById('stat-pending');
+const statAssets = document.getElementById('stat-assets');
+const statSize = document.getElementById('stat-size');
+
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
+}
+
+// Debounce statistics updates to avoid excessive calls
+let statisticsUpdateTimeout = null;
+
+/**
+ * Update the statistics display
+ * @param {boolean} immediate - Whether to update immediately or debounced
+ * @returns {Promise<void>}
+ */
+async function updateStatistics(immediate = false) {
+  if (!immediate) {
+    // Debounced update
+    if (statisticsUpdateTimeout) {
+      clearTimeout(statisticsUpdateTimeout);
+    }
+    statisticsUpdateTimeout = setTimeout(() => updateStatistics(true), 500);
+    return;
+  }
+
+  try {
+    const stats = await getCacheStatistics();
+
+    if (statCached) statCached.textContent = stats.cachedPresentations;
+    if (statPending) statPending.textContent = stats.pendingPresentations;
+    if (statAssets) statAssets.textContent = stats.totalAssets;
+    if (statSize) statSize.textContent = stats.formattedSize;
+  } catch (error) {
+    console.warn('Failed to update statistics:', error);
+    if (statCached) statCached.textContent = '-';
+    if (statPending) statPending.textContent = '-';
+    if (statAssets) statAssets.textContent = '-';
+    if (statSize) statSize.textContent = '-';
+  }
 }
 
 /**
@@ -73,6 +113,11 @@ function setStatusWithProgress(message, assetProgress = null, presentationProgre
   }
 
   statusEl.innerHTML = html;
+
+  // Update statistics periodically during progress updates
+  if (assetProgress && (assetProgress.current % 2 === 0 || assetProgress.current === assetProgress.total)) {
+    void updateStatistics();
+  }
 }
 
 async function updateOnlineStatus() {
@@ -201,6 +246,9 @@ async function handleLoadAll() {
         { current: completedPresentations, total: totalPresentations }
       );
 
+      // Update statistics after each presentation
+      await updateStatistics();
+
       // Small delay between presentations
       await artificialDelay(200);
     }
@@ -213,9 +261,13 @@ async function handleLoadAll() {
     try {
       const cachedCount = await getCachedPresentationCount();
       setStatus(`✓ Done! ${cachedCount} presentation(s) fully cached.`);
+      // Update statistics after completion (immediate)
+      await updateStatistics(true);
     } catch (error) {
       console.warn('Error getting cached count:', error);
       setStatus(`✓ Done! ${totalPresentations} presentation(s) processed.`);
+      // Still try to update statistics (immediate)
+      await updateStatistics(true);
     }
   } catch (e) {
     console.error(e);
@@ -280,6 +332,11 @@ async function hydratePresentationAssets(pres, options = {}) {
         });
       }
 
+      // Update statistics after each asset (throttled)
+      if (cachedCount % 3 === 0 || cachedCount === expectedUrls.length) {
+        void updateStatistics();
+      }
+
     } catch (e) {
       console.error('Failed to cache asset', url, e);
       // Still update progress even on failure
@@ -310,6 +367,8 @@ async function handleNuke() {
     btnNuke.disabled = true;
     await clearAllAssets();
     setStatus('All cached content deleted.');
+    // Update statistics after clearing (immediate)
+    await updateStatistics(true);
   } catch (e) {
     console.error(e);
     setStatus('Error: ' + e.message);
@@ -320,6 +379,8 @@ async function handleNuke() {
 
 function init() {
   updateOnlineStatus();
+  // Load initial statistics immediately
+  void updateStatistics(true);
   // Resume any pending hydrations from previous session
   void resumePendingHydrations();
   if (btnLoadAll) btnLoadAll.addEventListener('click', () => void handleLoadAll());

@@ -37,6 +37,56 @@
       </button>
     </div>
     <div id="status" class="small text-muted">Ready.</div>
+
+    <!-- Statistics Section -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <h5><i class="bi bi-bar-chart me-2"></i>Cache Statistics</h5>
+        <div class="row" id="statistics">
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-check-circle-fill text-success fs-2"></i>
+                <h6 class="card-title mt-2">Cached</h6>
+                <p class="card-text fs-4 fw-bold text-success" id="stat-cached">-</p>
+                <small class="text-muted">presentations</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-clock-fill text-warning fs-2"></i>
+                <h6 class="card-title mt-2">Pending</h6>
+                <p class="card-text fs-4 fw-bold text-warning" id="stat-pending">-</p>
+                <small class="text-muted">presentations</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-file-earmark-fill text-info fs-2"></i>
+                <h6 class="card-title mt-2">Assets</h6>
+                <p class="card-text fs-4 fw-bold text-info" id="stat-assets">-</p>
+                <small class="text-muted">files</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-hdd-fill text-primary fs-2"></i>
+                <h6 class="card-title mt-2">Storage</h6>
+                <p class="card-text fs-4 fw-bold text-primary" id="stat-size">-</p>
+                <small class="text-muted">used</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <hr />
     <p class="text-secondary">This page downloads images referenced by the presentations list and stores them in IndexedDB for offline usage. Service Worker will serve requests to /attachments/* from the local database when offline.</p>
   </main>
