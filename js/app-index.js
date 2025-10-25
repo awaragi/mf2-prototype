@@ -1,17 +1,21 @@
-// Index page functionality - loads and displays presentations list
+import {logger} from '../js-common/utils/logging.js';
+
+const logPrefix = '[INDEX]';
 
 // Load presentation data via AJAX
 async function loadPresentations() {
     try {
+        const now = performance.now();
         const response = await fetch('/api/slides.json');
+        logger.log(logPrefix, 'Slides loaded after', (performance.now() - now).toFixed(2), 'ms');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const slidesData = await response.json();
-        console.log('[INDEX] Slides loaded successfully', slidesData);
+        logger.log(logPrefix, 'Slides loaded successfully', slidesData);
         return slidesData;
     } catch (error) {
-        console.error('[INDEX] Error loading presentations:', error);
+        logger.error(logPrefix, 'Error loading presentations:', error);
         return null;
     }
 }
@@ -46,10 +50,10 @@ async function generatePresentationsList() {
     // Replace placeholder with actual content
     listElement.innerHTML = createPresentationHTML(presentations);
 
-    console.log(`[INDEX] Loaded ${presentations.length} presentations`);
+    logger.log(logPrefix, `Loaded ${presentations.length} presentations`);
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    generatePresentationsList();
+    generatePresentationsList().then(() => {});
 });
