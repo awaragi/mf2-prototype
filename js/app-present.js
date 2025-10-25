@@ -1,5 +1,6 @@
-// Presentation App Logic
-// Application logic will be added in subsequent stages
+import { logger } from '../js-common/utils/logging.js';
+
+const logPrefix = '[PRESENT]';
 
 // Configuration constants
 const INACTIVITY_HIDE_MS = 1000;
@@ -50,8 +51,8 @@ async function loadPresentationData() {
     disableAllInteractions();
 
     try {
-        console.log('[PRESENT] Loading presentation data from /api/slides.json...');
-        const response = await fetch('/api/slides.json');
+        logger.log(logPrefix, 'Loading presentation data from api/slides.json...');
+        const response = await fetch('api/slides.json');
 
         if (!response.ok) {
             throw new Error(`Failed to load slides: ${response.status} ${response.statusText}`);
@@ -69,7 +70,7 @@ async function loadPresentationData() {
         isDataLoaded = true;
         isDataLoading = false;
 
-        console.log(`[PRESENT] Loaded ${presentations.length} presentations from server`);
+        logger.log(logPrefix, `Loaded ${presentations.length} presentations from server`);
 
         // Hide loading and enable interactions
         showDataLoading(false);
@@ -79,7 +80,7 @@ async function loadPresentationData() {
         initializePresentationFeatures();
 
     } catch (error) {
-        console.error('[PRESENT] Failed to load presentation data:', error);
+        logger.error(logPrefix, 'Failed to load presentation data:', error);
         isDataLoading = false;
         showDataLoadingError(error.message);
     }
@@ -116,8 +117,8 @@ function initializeHeader() {
     if (logoArea) {
         logoArea.addEventListener('click', function(e) {
             e.preventDefault();
-            location.href = '/';
-            console.log('[PRESENT] Logo clicked - going back to main page');
+            location.href = 'index.html';
+            logger.log(logPrefix, 'Logo clicked - going back to main page');
         });
     }
 
@@ -148,12 +149,12 @@ function initializeHeader() {
     if (menuButton) {
         menuButton.addEventListener('shown.bs.dropdown', function() {
             isMenuOpen = true;
-            console.log('[PRESENT] Menu opened - pausing auto-hide');
+            logger.log(logPrefix, 'Menu opened - pausing auto-hide');
         });
 
         menuButton.addEventListener('hidden.bs.dropdown', function() {
             isMenuOpen = false;
-            console.log('[PRESENT] Menu closed - resuming auto-hide');
+            logger.log(logPrefix, 'Menu closed - resuming auto-hide');
             resetAutoHideTimer();
         });
     }
@@ -189,7 +190,7 @@ function initializeOverview() {
 function toggleOverview() {
     // Don't show overview if data is not loaded
     if (!isDataLoaded) {
-        console.log('[PRESENT] Data not loaded yet, skipping overview toggle');
+        logger.log(logPrefix, 'Data not loaded yet, skipping overview toggle');
         return;
     }
 
@@ -202,10 +203,10 @@ function toggleOverview() {
         overviewElement.classList.add('visible');
         updateActiveOverviewThumbnail();
         updateOverviewPosition();
-        console.log('[PRESENT] Overview shown - pausing auto-hide');
+        logger.log(logPrefix, 'Overview shown - pausing auto-hide');
     } else {
         overviewElement.classList.remove('visible');
-        console.log('[PRESENT] Overview hidden - resuming auto-hide');
+        logger.log(logPrefix, 'Overview hidden - resuming auto-hide');
         resetAutoHideTimer();
     }
 }
@@ -216,7 +217,7 @@ function generateOverviewThumbnails() {
 
     // Don't generate if data is not loaded
     if (!isDataLoaded) {
-        console.log('[PRESENT] Data not loaded yet, skipping thumbnail generation');
+        logger.log(logPrefix, 'Data not loaded yet, skipping thumbnail generation');
         return;
     }
 
@@ -261,7 +262,7 @@ function generateOverviewThumbnails() {
         thumbnailsContainer.appendChild(thumbnail);
     });
 
-    console.log(`[PRESENT] Generated ${slides.length} overview thumbnails for presentation: ${presentations[currentPresentationIndex].title}`);
+    logger.log(logPrefix, `Generated ${slides.length} overview thumbnails for presentation: ${presentations[currentPresentationIndex].title}`);
 }
 
 function updateActiveOverviewThumbnail() {
@@ -316,7 +317,7 @@ function initializeStage() {
     stageWrapElement = document.getElementById('stage-wrap');
 
     if (!stageElement || !stageWrapElement) {
-        console.error('[PRESENT] Stage elements not found');
+        logger.error(logPrefix, 'Stage elements not found');
         return;
     }
 
@@ -397,7 +398,7 @@ function calculateStageScale() {
             });
         }
 
-        console.log(`[PRESENT] Stage scaled to ${stageWidth}x${stageHeight} (scale: ${currentScale.toFixed(3)})`);
+        logger.log(logPrefix, `Stage scaled to ${stageWidth}x${stageHeight} (scale: ${currentScale.toFixed(3)})`);
     });
 }
 
@@ -442,7 +443,7 @@ function updateAdditionalContentWidth() {
 function startProgressivePreload() {
     // Don't preload if data is not loaded
     if (!isDataLoaded) {
-        console.log('[PRESENT] Data not loaded yet, skipping preload');
+        logger.log(logPrefix, 'Data not loaded yet, skipping preload');
         return;
     }
 
@@ -453,7 +454,7 @@ function startProgressivePreload() {
     const totalImages = imageSlides.length;
 
     if (totalImages === 0) {
-        console.log('[PRESENT] No images to preload for current presentation');
+        logger.log(logPrefix, 'No images to preload for current presentation');
         return;
     }
 

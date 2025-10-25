@@ -1,16 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Offline Content</title>
-  <link rel="stylesheet" href="/assets/third-party/bootstrap.min.css">
-  <link rel="stylesheet" href="/assets/third-party/bootstrap-icons.css">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="icon" href="/favicon.ico">
+
+    <!-- PWA meta tags for iOS -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Presentation">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="assets/third-party/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="assets/third-party/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <script src="assets/third-party/bootstrap.bundle.min.js"></script>
+
+    <!-- SW/PWA manifest -->
+    <link rel="manifest" href="sw/manifest.webmanifest">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <script type="module" src="js/app-offline.js"></script>
+    <script type="module" src="js/pwa.js"></script>
 </head>
 <body>
-  <!-- App Navbar (same structure as present.html) -->
   <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
     <div class="container-fluid">
       <!-- Logo and title area -->
@@ -40,8 +57,5 @@
     <hr />
     <p class="text-secondary">This page downloads images referenced by the presentations list and stores them in IndexedDB for offline usage. Service Worker will serve requests to /attachments/* from the local database when offline.</p>
   </main>
-
-  <script type="module" src="/js/pwa.js"></script>
-  <script type="module" src="/js/app-offline.js"></script>
 </body>
 </html>

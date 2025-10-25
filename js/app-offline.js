@@ -2,7 +2,7 @@
 
 import { putAsset, clearAllAssets } from '../js-common/db/content-db.js';
 
-const content = '/api/slides.json';
+const content = 'api/slides.json';
 
 const statusEl = document.getElementById('status');
 const netEl = document.getElementById('net-indicator');

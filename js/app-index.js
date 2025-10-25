@@ -6,7 +6,7 @@ const logPrefix = '[INDEX]';
 async function loadPresentations() {
     try {
         const now = performance.now();
-        const response = await fetch('/api/slides.json');
+        const response = await fetch('api/slides.json');
         logger.log(logPrefix, 'Slides loaded after', (performance.now() - now).toFixed(2), 'ms');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

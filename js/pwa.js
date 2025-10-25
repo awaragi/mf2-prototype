@@ -2,7 +2,7 @@
 import {logger} from '../js-common/utils/logging.js';
 import {initNetworkMonitoring} from "./utils/network-monitor.js";
 
-const SERVICE_WORKER_SCRIPT = '/sw.js';
+const SERVICE_WORKER_SCRIPT = 'sw.js';
 const logPrefix = '[PWA]';
 
 // PWA state variables
@@ -53,7 +53,7 @@ async function registerServiceWorker() {
     }
 
     try {
-        registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {type: 'module', scope: '/'});
+        registration = await navigator.serviceWorker.register(SERVICE_WORKER_SCRIPT, {type: 'module', scope: '/mf2-prototype/'});
         logger.log(logPrefix, 'SW registered with scope:', registration.scope);
 
         handleServiceWorkerControllerChange();

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Presentation</title>
 
     <!-- PWA meta tags for iOS -->
@@ -11,15 +11,21 @@
     <meta name="apple-mobile-web-app-title" content="Presentation">
 
     <!-- Bootstrap 5 CSS -->
-    <link href="/assets/third-party/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/third-party/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link href="/assets/third-party/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/third-party/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="styles.css">
 
+    <script src="assets/third-party/bootstrap.bundle.min.js"></script>
+
     <!-- SW/PWA manifest -->
-    <link rel="manifest" href="/sw/manifest.webmanifest">
+    <link rel="manifest" href="sw/manifest.webmanifest">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <script type="module" src="js/app-present.js"></script>
+    <script type="module" src="js/pwa.js"></script>
 </head>
 <body>
     <header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
@@ -61,7 +67,7 @@
                 </div>
 
                 <!-- Offline content link -->
-                <a href="/offline.html" class="btn btn-outline-secondary me-2" id="btn-offline-page" aria-label="Open offline content page">
+                <a href="offline.html" class="btn btn-outline-secondary me-2" id="btn-offline-page" aria-label="Open offline content page">
                     <i class="bi bi-download"></i>
                 </a>
                 <!-- Network status indicator -->
@@ -125,12 +131,5 @@
             <button id="about-modal-close" class="btn btn-primary about-modal-close-btn">Close</button>
         </div>
     </dialog>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="/assets/third-party/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom scripts -->
-    <script src="js/app-present.js" type="module" defer></script>
-    <script type="module" src="/js/pwa.js" defer></script>
 </body>
 </html>

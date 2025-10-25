@@ -125,7 +125,7 @@ function extractRequest(event) {
 
     // App-shell for navigations (SPA)
     if (request.mode === 'navigate') {
-        pathname = '/index.html';
+        pathname = 'index.html';
     }
 
     // Normalize paths (but keep attachments paths untouched)
