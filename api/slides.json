@@ -2,6 +2,7 @@
   {
     "id": "strapi-presentation",
     "title": "Strapi Integration Presentation",
+    "version": "1.0",
     "slides": [
       {
         "id": "intro",
@@ -47,6 +48,7 @@
   {
     "id": "tech-showcase",
     "title": "Technology Showcase",
+    "version": "1.0",
     "slides": [
       {
         "id": "welcome",

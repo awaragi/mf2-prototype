@@ -7,7 +7,7 @@ export const APP_CACHE = {
     "js/app-index.js": "e3f24696",
     "js/utils/network-monitor.js": "4cb3fdab",
     "js/app-present.js": "63ca3337",
-    "js/app-offline.js": "d261f582",
+    "js/app-offline.js": "88813cae",
     "js/pwa.js": "34cbc289",
     "js-common/utils/logging.js": "8cb1fdbd",
     "js-common/db/content-db.js": "043f86f2",

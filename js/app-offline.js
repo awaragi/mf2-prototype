@@ -25,8 +25,10 @@ window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 
 async function loadSlidesList() {
-    const res = await fetch(content, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`Failed to fetch ${content}: ${res.status}`);
+    const res = await fetch(content, {cache: 'no-cache', headers: {'X-Network-First': '1'}});
+    if (!res.ok) {
+      throw new Error(`Failed to fetch ${content}: ${res.status}`);
+  }
   return res.json();
 }
 

@@ -10,9 +10,28 @@ const logPrefix = '[SW-FETCH]';
  * @param event
  */
 export async function handleAppCacheRequest(event) {
+    const startTime = performance.now();
+
     let {request, pathname} = extractRequest(event);
 
-    const startTime = performance.now();
+    // Check for network-first header
+    const networkFirst = request.headers.get('X-Network-First') === '1';
+    if (networkFirst) {
+        try {
+            logger.debug(logPrefix, 'Network-first fetch requested, trying network first');
+            const response = await fetch(request);
+            if (response.ok) {
+                const duration = Math.round(performance.now() - startTime);
+                logger.debug(logPrefix, 'Network fetch success:', pathname, `(${duration}ms)`);
+                return response;
+            } else {
+                throw new Error('Network-first fetch failed');
+            }
+        } catch (error) {
+            logger.debug(logPrefix, 'Network-first fetch failed, falling back to normal flow');
+        }
+
+    }
     try {
         // 1) Content cache via IndexedDB (attachments and other allowed paths)
         if (shouldServeFromIDB(pathname, request)) {
