@@ -1,0 +1,17 @@
+<header id="app-header" class="navbar navbar-light bg-white border-bottom sticky-top">
+  <div class="container-fluid">
+    <!-- Logo and title area -->
+    <div class="navbar-brand d-flex align-items-center" id="logo-area">
+      @if (showBackButton()) {
+        <a routerLink="/" class="d-flex align-items-center text-decoration-none">
+          <img src="assets/cgi-logo.png" alt="CGI Logo" id="cgi-logo" class="me-2">
+          <span id="current-title">{{ title() }}</span>
+        </a>
+      } @else {
+        <img src="assets/cgi-logo.png" alt="CGI Logo" id="cgi-logo" class="me-2">
+        <span id="current-title">{{ title() }}</span>
+      }
+    </div>
+  </div>
+</header>
+

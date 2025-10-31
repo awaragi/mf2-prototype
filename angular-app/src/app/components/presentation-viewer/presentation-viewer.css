@@ -1,0 +1,185 @@
+/* Main Content Area */
+#app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stage Wrapper - Centers the stage */
+#stage-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  min-height: 0;
+  position: relative;
+}
+
+/* Stage Container - 4:3 Aspect Ratio with Enhanced Styling */
+#stage {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  max-width: 100%;
+  background-color: var(--cgi-white);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px var(--cgi-red-alpha-12), 0 4px 16px var(--cgi-black-alpha-08);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cgi-red-alpha-10);
+  padding: 2rem;
+}
+
+/* Slide Content Styles with Responsive Typography */
+.slide-content {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--cgi-black);
+  line-height: 1.6;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.html-slide {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.image-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Typography using clamp() */
+.html-slide :deep(h1) {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: var(--cgi-red);
+  margin-bottom: clamp(0.75rem, 2vw, 1.5rem);
+  line-height: 1.2;
+}
+
+.html-slide :deep(h2) {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 600;
+  color: var(--cgi-red);
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+  line-height: 1.3;
+}
+
+.html-slide :deep(h3) {
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  font-weight: 500;
+  color: var(--cgi-purple);
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+  line-height: 1.4;
+}
+
+.html-slide :deep(p) {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+  line-height: 1.6;
+  color: var(--cgi-black);
+}
+
+.html-slide :deep(li) {
+  font-size: clamp(0.95rem, 1.7vw, 1.2rem);
+  margin-bottom: clamp(0.25rem, 0.8vw, 0.5rem);
+  line-height: 1.5;
+  color: var(--cgi-black);
+}
+
+.html-slide :deep(ol),
+.html-slide :deep(ul) {
+  padding-left: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+/* Floating Navigation Buttons with Brand Styling */
+.nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--cgi-red-alpha-20);
+  background: var(--cgi-white-alpha-95);
+  color: var(--cgi-gray-dark);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0.8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px var(--cgi-red-alpha-15);
+}
+
+.nav-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--cgi-white);
+  border-color: var(--cgi-red);
+  color: var(--cgi-red);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 24px var(--cgi-red-alpha-25);
+}
+
+.nav-btn:focus {
+  outline: none;
+  border-color: var(--cgi-purple);
+  color: var(--cgi-purple);
+  box-shadow: 0 0 0 3px var(--cgi-purple-alpha-20);
+}
+
+.nav-btn:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.nav-btn:disabled,
+.nav-btn.nav-hidden {
+  opacity: 0.1;
+  pointer-events: none;
+  cursor: default;
+}
+
+.nav-btn-prev {
+  left: 20px;
+}
+
+.nav-btn-next {
+  right: 20px;
+}
+
+/* Hide navigation buttons on very small screens */
+@media (max-width: 480px) {
+  .nav-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  .nav-btn-prev {
+    left: 10px;
+  }
+
+  .nav-btn-next {
+    right: 10px;
+  }
+}
+
+/* Responsive text scaling for very small screens */
+@media (max-width: 480px) {
+  .slide-content {
+    font-size: 0.9em;
+  }
+}

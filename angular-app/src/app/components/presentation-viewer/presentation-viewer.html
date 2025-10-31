@@ -1,0 +1,41 @@
+<app-header [title]="presentation()?.title || 'Presentation'" [showBackButton]="true" />
+
+<div id="app-main">
+  <div id="stage-wrap">
+    <div id="stage">
+      @if (currentSlide(); as slide) {
+        @if (slide.template === 'html') {
+          <div class="slide-content html-slide" [innerHTML]="slideContent()"></div>
+        } @else if (slide.template === 'img') {
+          <div class="slide-content image-slide">
+            <img [src]="slide.src" [alt]="slide.title" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+          </div>
+        }
+      } @else {
+        <div class="slide-content">
+          <p>Loading slide...</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Navigation buttons -->
+<button
+  class="nav-btn nav-btn-prev"
+  [class.nav-hidden]="!canGoPrevious()"
+  (click)="previousSlide()"
+  [disabled]="!canGoPrevious()"
+  aria-label="Previous slide">
+  <i class="bi bi-chevron-left"></i>
+</button>
+
+<button
+  class="nav-btn nav-btn-next"
+  [class.nav-hidden]="!canGoNext()"
+  (click)="nextSlide()"
+  [disabled]="!canGoNext()"
+  aria-label="Next slide">
+  <i class="bi bi-chevron-right"></i>
+</button>
+

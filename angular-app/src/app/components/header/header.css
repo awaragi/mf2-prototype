@@ -1,0 +1,46 @@
+#app-header {
+  min-height: 60px;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--cgi-red) !important;
+  background-color: var(--cgi-white) !important;
+  box-shadow: 0 2px 4px var(--cgi-red-alpha-10);
+}
+
+#cgi-logo {
+  height: 40px;
+  width: auto;
+  cursor: pointer;
+}
+
+#current-title {
+  font-weight: 600;
+  color: var(--cgi-black);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+#logo-area {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#logo-area:hover {
+  text-decoration: none;
+  color: inherit;
+  opacity: 0.8;
+}
+
+#logo-area:focus {
+  outline: 2px solid var(--cgi-red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+#logo-area a {
+  color: inherit;
+  text-decoration: none;
+}

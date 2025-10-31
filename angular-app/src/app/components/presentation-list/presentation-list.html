@@ -1,0 +1,31 @@
+<app-header [title]="'Presentations'" />
+
+<div class="presentations">
+  <div class="presentations-list">
+    @if (isLoading()) {
+      <ul id="presentations-list">
+        <li style="text-align: center; color: #666; font-style: italic;">
+          Loading presentations...
+        </li>
+      </ul>
+    } @else if (errorMessage()) {
+      <ul id="presentations-list">
+        <li style="color: red;">{{ errorMessage() }}</li>
+      </ul>
+    } @else {
+      <ul id="presentations-list">
+        @for (presentation of presentations(); track presentation.id) {
+          <li>
+            <a [routerLink]="['/present', presentation.id, getFirstSlideId(presentation)]">
+              {{ presentation.title }}
+            </a>
+            <div class="presentation-meta">
+              {{ presentation.slides.length }} slide{{ presentation.slides.length !== 1 ? 's' : '' }}
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
